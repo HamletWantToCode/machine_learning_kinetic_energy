@@ -1,0 +1,16 @@
+#!/bin/sh
+#PBS -N rhb_MLoptim
+#PBS -l nodes=1:ppn=24
+#PBS -j oe
+
+cd $PBS_O_WORKDIR
+
+bash run.sh >> out 2>&1
+ 
+
+
+
+
+
+
+
