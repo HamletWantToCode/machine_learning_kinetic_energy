@@ -1,35 +1,33 @@
 import numpy as np 
 import pandas as pd 
 import pickle
-from quantum import quantum
+from ml_tools.quantum import quantum1D
 
-nk = 81
-nG = 51   # odd number !!
-N = 500
+np.random.seed(336)
 
-data_nqTdT = []
+nk = 80
+nG = 51
+num_VStrength = 20
+num_Vcomponents = 10
+num_deltaMu = 10
 
-np.random.seed(336)     # repeatable
+DataStorage = []
 
-V_s = np.arange(20, 40.1, 0.1)       # range of the strength of potential
-V_FFT_components = [1, 2, 3, 4, 5, 6]
-dMu = np.arange(40, 60.1, 0.1)
+PotentialStrength = np.linspace(0, 100, num_VStrength)
+PotentialComponents = np.arange(1, num_Vcomponents, 1)
+DeltaMu = np.linspace(5, 50, num_deltaMu)
+X, Y, Z = np.meshgrid(PotentialStrength, PotentialComponents, DeltaMu, indexing='ij')
+parameters = list(zip(X.flatten(), Y.flatten(), Z.flatten()))
 
-for i in range(N):
-    V0 = np.random.choice(V_s)
-    n_cmp = np.random.choice(V_FFT_components)
-    dmu = np.random.choice(dMu)
-    Ek, mu, _, Vq, densG = quantum(n_cmp, V0, dmu, nk, nG)
-    Mu = np.zeros_like(Vq)
-    Mu[0] = mu
-    dTdn = Mu - Vq
-    data_nqTdT.append([*densG, Ek, *dTdn])
+for Vs, n_cmp, dmu in parameters:
+    Ek, mu, _, Vq, densG = quantum1D(n_cmp, Vs, dmu, nk, nG)
+    DataStorage.append([*densG, Ek])
 
-df_nqTdT = pd.DataFrame(data_nqTdT)
+Data = pd.DataFrame(DataStorage)
 
-fname = '../densG_T_dT'
+fname = '/Users/hongbinren/Documents/program/machine_learning_kinetic_energy/data_file/quantum1D'
 with open(fname, 'wb') as f:
-    pickle.dump(df_nqTdT, f)
+    pickle.dump(Data, f)
 
 
 

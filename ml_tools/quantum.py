@@ -1,9 +1,8 @@
 # API for ed
 
 import numpy as np 
-from QML.main import ed, quantum_util
-import pickle
-from mpi4py import MPI
+from ml_main import ed, quantum_util
+import multiprocessing as mp 
 
 def potential_scaler(X):
     """
@@ -38,40 +37,73 @@ def Vextq_2D(nx, ny, nG, V0):
     Vx_std = potential_scaler(Vx)
     return np.fft.rfft2(Vx_std*V0)/nG**2
 
-def quantum1D(nA, V0, dmu, nk, nG, comm):
+def quantum1D(nA, V0, dmu, nk, nG):
     """
     nA should larger than 1 !
     """
-    np.random.seed(35)
     Vq = Vextq_1D(nA, nG, V0)
     rd_fstBz = np.linspace(0, np.pi, nk)
+    n_cpu = 4
+    
+    bandDataQueue, wavefuncDataQueue = mp.Queue(), mp.Queue()
+    chunk_size = nk//n_cpu
+    Procs = []
+    for p_ix in range(n_cpu):
+        part_kpoints = rd_fstBz[p_ix*chunk_size : (p_ix+1)*chunk_size]
+        p = mp.Process(target=ed.solver1D, args=(part_kpoints, nG, Vq, p_ix, bandDataQueue, wavefuncDataQueue))
+        p.start()
+        Procs.append(p)
 
-    rank, size = comm.Get_rank(), comm.Get_size()
-    m = len(rd_fstBz) // size
-    en_band_, uq_ = np.zeros((size, m, nG)), np.zeros((size, m, nG, nG), np.complex64)
-    # dtype CANNOT BE SET to complex !!!
+    bandResults, wavefuncResults = [], []
+    for p in Procs:
+        bandResults.append(bandDataQueue.get())
+        wavefuncResults.append(wavefuncDataQueue.get())
+    bandResults.sort()
+    wavefuncResults.sort()
+    bandDataStorage = np.vstack([item[1] for item in bandResults])
+    wavefuncDataStorage = np.vstack([item[1] for item in wavefuncResults])
+    
+    mu = dmu + bandDataStorage[:, 0].min()
+    Ek = quantum_util.kinetic_en1D(nk, nG, mu, bandDataStorage, wavefuncDataStorage)
+    densG = quantum_util.density1D(nk, nG, mu, bandDataStorage, wavefuncDataStorage)
+    results = [Ek, mu, bandDataStorage, Vq, densG]
+    return results
 
-    kpoints = rd_fstBz[rank*m:(rank+1)*m]
-    part_band, part_uq = ed.solver1D(kpoints, nG, Vq)
-    comm.Gather(part_band, en_band_)
-    comm.Gather(part_uq, uq_)
 
-    # ---------- serial part ------------ #
-    if rank == 0:
-        en_band, uq = en_band_.reshape((nk, nG)), uq_.reshape((nk, nG, nG))
-        # -------- compute the lowest band energy ----- #
-        mu = dmu + en_band[:, 0].min()
-        # en_band0, _ = ed.solver1D([0.0], nG, Vq)
-        # E0 = en_band0[0, 0]
-        # mu = E0 + dmu
-        # ------- Ek, density ----------- #
-        Ek = quantum_util.kinetic_en1D(nk, nG, mu, en_band, uq)
-        densG = quantum_util.density1D(nk, nG, mu, en_band, uq)
-        results = [Ek, mu, en_band, Vq, densG]
-        with open('../data_file/quantum1D', 'wb') as f:
-            pickle.dump(results, f)
-    # --------------------------------- #
-    return None
+# def quantum1D(nA, V0, dmu, nk, nG, comm):
+#     """
+#     nA should larger than 1 !
+#     """
+#     np.random.seed(35)
+#     Vq = Vextq_1D(nA, nG, V0)
+#     rd_fstBz = np.linspace(0, np.pi, nk)
+
+#     rank, size = comm.Get_rank(), comm.Get_size()
+#     m = len(rd_fstBz) // size
+#     en_band_, uq_ = np.zeros((size, m, nG)), np.zeros((size, m, nG, nG), np.complex64)
+#     # dtype CANNOT BE SET to complex !!!
+
+#     kpoints = rd_fstBz[rank*m:(rank+1)*m]
+#     part_band, part_uq = ed.solver1D(kpoints, nG, Vq)
+#     comm.Gather(part_band, en_band_)
+#     comm.Gather(part_uq, uq_)
+
+#     # ---------- serial part ------------ #
+#     if rank == 0:
+#         en_band, uq = en_band_.reshape((nk, nG)), uq_.reshape((nk, nG, nG))
+#         # -------- compute the lowest band energy ----- #
+#         mu = dmu + en_band[:, 0].min()
+#         # en_band0, _ = ed.solver1D([0.0], nG, Vq)
+#         # E0 = en_band0[0, 0]
+#         # mu = E0 + dmu
+#         # ------- Ek, density ----------- #
+#         Ek = quantum_util.kinetic_en1D(nk, nG, mu, en_band, uq)
+#         densG = quantum_util.density1D(nk, nG, mu, en_band, uq)
+#         results = [Ek, mu, en_band, Vq, densG]
+#         with open('../data_file/quantum1D', 'wb') as f:
+#             pickle.dump(results, f)
+#     # --------------------------------- #
+#     return None
 
 def quantum2D(nx, ny, V0, dmu, nk, nG, comm):
     """
