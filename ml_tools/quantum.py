@@ -2,6 +2,7 @@
 
 import numpy as np 
 from ml_main import ed, quantum_util
+# from ml_examples.Kronig_Penny import KP_potential
 import multiprocessing as mp 
 
 def potential_scaler(X):
@@ -37,37 +38,42 @@ def Vextq_2D(nx, ny, nG, V0):
     Vx_std = potential_scaler(Vx)
     return np.fft.rfft2(Vx_std*V0)/nG**2
 
-def quantum1D(nA, V0, dmu, nk, nG):
+def quantum1D(potentialStrength, numOfBasis, numOfFFTComponents=None):
     """
-    nA should larger than 1 !
+    numOfFFTComponents should larger than 1 !
     """
-    Vq = Vextq_1D(nA, nG, V0)
-    rd_fstBz = np.linspace(0, np.pi, nk)
-    n_cpu = 4
-    
-    bandDataQueue, wavefuncDataQueue = mp.Queue(), mp.Queue()
-    chunk_size = nk//n_cpu
-    Procs = []
-    for p_ix in range(n_cpu):
-        part_kpoints = rd_fstBz[p_ix*chunk_size : (p_ix+1)*chunk_size]
-        p = mp.Process(target=ed.solver1D, args=(part_kpoints, nG, Vq, p_ix, bandDataQueue, wavefuncDataQueue))
-        p.start()
-        Procs.append(p)
+    Vq = Vextq_1D(numOfFFTComponents, numOfBasis, potentialStrength)
+    # potentialCutoff = 1 - (1.5 / potentialStrength)
+    # Vq = KP_potential(numOfBasis, potentialCutoff, potentialStrength)
 
-    bandResults, wavefuncResults = [], []
-    for p in Procs:
-        bandResults.append(bandDataQueue.get())
-        wavefuncResults.append(wavefuncDataQueue.get())
-    bandResults.sort()
-    wavefuncResults.sort()
-    bandDataStorage = np.vstack([item[1] for item in bandResults])
-    wavefuncDataStorage = np.vstack([item[1] for item in wavefuncResults])
-    
-    mu = dmu + bandDataStorage[:, 0].min()
-    Ek = quantum_util.kinetic_en1D(nk, nG, mu, bandDataStorage, wavefuncDataStorage)
-    densG = quantum_util.density1D(nk, nG, mu, bandDataStorage, wavefuncDataStorage)
-    results = [Ek, mu, bandDataStorage, Vq, densG]
-    return results
+    def compute(shiftInChemicalPotential, numOfkPoints):
+        rd_fstBz = np.linspace(0, np.pi, numOfkPoints)
+        n_cpu = 4
+        
+        bandDataQueue, wavefuncDataQueue = mp.Queue(), mp.Queue()
+        chunk_size = numOfkPoints//n_cpu
+        Procs = []
+        for p_ix in range(n_cpu):
+            part_kpoints = rd_fstBz[p_ix*chunk_size : (p_ix+1)*chunk_size]
+            p = mp.Process(target=ed.solver1D, args=(part_kpoints, numOfBasis, Vq, p_ix, bandDataQueue, wavefuncDataQueue))
+            p.start()
+            Procs.append(p)
+
+        bandResults, wavefuncResults = [], []
+        for p in Procs:
+            bandResults.append(bandDataQueue.get())
+            wavefuncResults.append(wavefuncDataQueue.get())
+        bandResults.sort()
+        wavefuncResults.sort()
+        bandDataStorage = np.vstack([item[1] for item in bandResults])
+        wavefuncDataStorage = np.vstack([item[1] for item in wavefuncResults])
+        
+        mu = shiftInChemicalPotential + bandDataStorage[:, 0].min()
+        Ek = quantum_util.kinetic_en1D(numOfkPoints, numOfBasis, mu, bandDataStorage, wavefuncDataStorage)
+        densG = quantum_util.density1D(numOfkPoints, numOfBasis, mu, bandDataStorage, wavefuncDataStorage)
+        results = [Ek, mu, bandDataStorage, Vq, densG]
+        return results
+    return compute
 
 
 # def quantum1D(nA, V0, dmu, nk, nG, comm):
