@@ -39,7 +39,7 @@ def quantum1D(numOfBasis, numOfFFTComponents=None, VqMagnitude=None):
 
     def compute(shiftInChemicalPotential, numOfkPoints):
         rd_fstBz = np.linspace(0, np.pi, numOfkPoints)
-        n_cpu = 4
+        n_cpu = mp.cpu_count()
         
         bandDataQueue, wavefuncDataQueue = mp.Queue(), mp.Queue()
         chunk_size = numOfkPoints//n_cpu
