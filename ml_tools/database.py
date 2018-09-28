@@ -22,7 +22,7 @@ for numOfFFTComponents in range(2, MaxFFTComponent):
 
 Data = np.array(DataStorage)
 np.random.shuffle(Data)
-fname = '/home/hongbin/Documents/project/machine_learning_kinetic_energy/data_file/quantum1D'
+fname = '../data_file/quantum1D'
 with open(fname, 'wb') as f:
     pickle.dump(Data, f)
 
