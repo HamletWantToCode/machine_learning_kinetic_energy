@@ -1,5 +1,5 @@
-import numpy as np 
-import pandas as pd 
+import numpy as np
+import pandas as pd
 import pickle
 from ml_tools.quantum import quantum1D
 
@@ -9,7 +9,7 @@ nk = 80
 nG = 51
 num_VStrength = 20
 num_Vcomponents = 10
-num_deltaMu = 10
+num_deltaMu = 20
 
 DataStorage = []
 
@@ -25,10 +25,10 @@ for Vs, n_cmp, dmu in parameters:
 
 Data = pd.DataFrame(DataStorage)
 
-fname = '/Users/hongbinren/Documents/program/machine_learning_kinetic_energy/data_file/quantum1D'
+fname = '/home/hongbin/Documents/project/machine_learning_kinetic_energy/data_file/quantum1D'
 with open(fname, 'wb') as f:
     pickle.dump(Data, f)
 
 
 
-    
+
