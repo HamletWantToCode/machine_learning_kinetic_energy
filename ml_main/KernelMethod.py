@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import numpy as np
 
 def kernelFitting(X, y, penalty, kernelFunction):
