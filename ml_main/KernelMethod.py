@@ -11,7 +11,6 @@ def kernelFitting(X, y, penalty, kernelFunction):
             K[i, j] = K[j, i] = kernelFunction(X[i], X[j])
     K += penalty*n*np.eye(n)
     U, S, Vh = np.linalg.svd(K)
-    rank = len(S[S>1e-10])
     coef = np.divide(np.dot(y, U), S)
     sol = 0
     for j, cj in enumerate(coef):
