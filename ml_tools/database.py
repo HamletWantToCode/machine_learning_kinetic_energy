@@ -7,9 +7,9 @@ np.random.seed(5)
 numOfKpoints = 40
 numOfBasis = 31
 MaxFFTComponent = 10
-VqMagnitude = np.linspace(0, 30, 10)
-samplingSteps = 50
-DeltaMu = np.linspace(5, 30, 10)
+VqMagnitude = np.linspace(0, 30, 2)
+samplingSteps = 2
+DeltaMu = np.linspace(5, 30, 2)
 
 DataStorage = []
 for numOfFFTComponents in range(2, MaxFFTComponent):

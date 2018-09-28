@@ -6,4 +6,4 @@
 **/out
 *.pbs
 *.sh
-/data_file/
+data_file/
