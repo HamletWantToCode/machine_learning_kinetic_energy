@@ -4,3 +4,6 @@
 *$py.class
 **/.ipynb_checkpoints/
 **/out
+*.pbs
+*.sh
+**/data_file/

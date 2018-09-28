@@ -31,14 +31,17 @@ def hamilton_operator_G_2D(kx, ky, nG, vext, lambda0):
     H = H_.reshape((nG**2, nG**2))
     return H
 
-def solver1D(kpoints, nG, vext, p_ix, queue1, queue2):
+def solver1D(kpoints, nG, vext, p_ix=None, queue1=None, queue2=None):
     m = len(kpoints)
     part_band, part_uG = np.zeros((m, nG)), np.zeros((m, nG, nG), np.complex64)
     for i, kx in enumerate(kpoints):
         H = hamilton_operator_G_1D(kx, nG, vext, 1)
         eigval, eigvec = np.linalg.eigh(H)
         part_band[i], part_uG[i] = eigval, eigvec
-    return queue1.put((p_ix, part_band)), queue2.put((p_ix, part_uG))
+    if queue1 and queue2:
+        return queue1.put((p_ix, part_band)), queue2.put((p_ix, part_uG))
+    else:
+        return part_band, part_uG
 
 def solver2D(kpoints, nG, vext):
     m = len(kpoints)
