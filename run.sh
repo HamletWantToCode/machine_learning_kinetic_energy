@@ -1,17 +1,8 @@
 #!/bin/bash
 
-# python=/storage1/home/renhb/anaconda2/envs/py36/bin/python
-python=/Users/hongbinren/anaconda2/envs/py36/bin/python
-export TOOLS=/Users/hongbinren/Documents/program/1D/tools
+python=/home/hongbin/anaconda3/envs/project-qml/bin/python
 
 date > out
 
-# echo 'Construct database...' >> out
-# (time $python database.py) >> out 2>&1
-# echo 'Database finished...' >> out
+(time nohup $python ml_tools/database.py &) >>out 2>&1
 
-echo 'Model optimize...' >> out
-(time $python $TOOLS/optimization.py > result) >>out 2>&1
-echo 'Finish optimize...' >> out
-
-date >> out
