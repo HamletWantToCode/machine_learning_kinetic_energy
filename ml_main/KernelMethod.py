@@ -35,10 +35,11 @@ if __name__ == '__main__':
     f = lambda x: a + b*x + c*x**2 + d*x**3
     y = f(X)
     penalty = 1e-3
-    kernel = lambda x, y: (1 + 100*x*y)**3
-    coef = kernelFitting(X, y, penalty, kernel)
-    func = kernelRepresentedFunction(X, coef, kernel)
-    krr = KernelRidge(alpha=1e-3, kernel=kernel)
+    # kernel_poly = lambda x, y: (1 + 100*x*y)**3
+    kernel_exp = lambda x, y: np.exp(-0.5*(x-y)**2)
+    coef = kernelFitting(X, y, penalty, kernel_exp)
+    func = kernelRepresentedFunction(X, coef, kernel_exp)
+    krr = KernelRidge(alpha=1e-3, kernel=kernel_exp)
     krr.fit(X.reshape(-1, 1), y.reshape(-1, 1))
 
     X_test = np.linspace(1, 2, 30)
