@@ -12,10 +12,10 @@ def externalPotential1D(numOfBasis, numOfFFTComponents, r0):
     """
     len_Vq = numOfBasis//2+1
     Vq = np.zeros(len_Vq, np.complex64)
-    phaseAngle = np.random.uniform(-np.pi, np.pi, numOfFFTComponents)
+    Vq[0] = 1
     for i in range(1, numOfFFTComponents):
-        Vq[i] = r0*np.exp(1j*phaseAngle[i])
-    return Vq
+        Vq[i] = np.random.uniform(high=r0) + 1j*np.random.uniform(high=r0)
+    return -Vq
 
 def Vextq_2D(nx, ny, nG, V0):
     assert nG>2*ny and nG>2*nx
@@ -34,8 +34,6 @@ def Vextq_2D(nx, ny, nG, V0):
 
 def quantum1D(numOfBasis, numOfFFTComponents=None, VqMagnitude=None):
     Vq = externalPotential1D(numOfBasis, numOfFFTComponents, VqMagnitude)
-    # potentialCutoff = 1 - (1.5 / potentialStrength)
-    # Vq = KP_potential(numOfBasis, potentialCutoff, potentialStrength)
 
     def compute(shiftInChemicalPotential, numOfkPoints):
         rd_fstBz = np.linspace(0, np.pi, numOfkPoints)
