@@ -1,9 +1,9 @@
 # API for ed
 
-import numpy as np 
-from ml_main import ed, quantum_util
+import numpy as np
+from machine_learning_kinetic_energy.main import ed, quantum_util
 # from ml_examples.Kronig_Penny import KP_potential
-import multiprocessing as mp 
+import multiprocessing as mp
 
 def externalPotential1D(numOfBasis, numOfFFTComponents, r0):
     """
@@ -38,7 +38,7 @@ def quantum1D(numOfBasis, numOfFFTComponents=None, VqMagnitude=None):
     def compute(shiftInChemicalPotential, numOfkPoints):
         rd_fstBz = np.linspace(0, np.pi, numOfkPoints)
         n_cpu = mp.cpu_count()
-        
+
         bandDataQueue, wavefuncDataQueue = mp.Queue(), mp.Queue()
         chunk_size = numOfkPoints//n_cpu
         Procs = []
@@ -56,7 +56,7 @@ def quantum1D(numOfBasis, numOfFFTComponents=None, VqMagnitude=None):
         wavefuncResults.sort()
         bandDataStorage = np.vstack([item[1] for item in bandResults])
         wavefuncDataStorage = np.vstack([item[1] for item in wavefuncResults])
-        
+
         mu = shiftInChemicalPotential + bandDataStorage[:, 0].min()
         Ek = quantum_util.kinetic_en1D(numOfkPoints, numOfBasis, mu, bandDataStorage, wavefuncDataStorage)
         densG = quantum_util.density1D(numOfkPoints, numOfBasis, mu, bandDataStorage, wavefuncDataStorage)
@@ -84,7 +84,7 @@ def quantum2D(nx, ny, V0, dmu, nk, nG, comm):
     part_band, part_uq = ed.solver2D(kpoints, nG, Vq)
     comm.Gather(part_band, en_band_)
     comm.Gather(part_uq, uq_)
-    
+
     # --------------- serial part ---------------------- #
     if rank == 0:
         en_band, uq = en_band_.reshape((nk, nk, nG**2)), uq_.reshape((nk, nk, nG**2, nG**2))

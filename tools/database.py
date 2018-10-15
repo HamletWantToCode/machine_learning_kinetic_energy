@@ -1,6 +1,6 @@
 import numpy as np
 import pickle
-from ml_tools.quantum import quantum1D
+from machine_learning_kinetic_energy.tools.quantum import quantum1D
 
 np.random.seed(5)
 
