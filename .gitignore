@@ -8,3 +8,4 @@
 *.pbs
 data_file/
 .vscode/
+**/old/

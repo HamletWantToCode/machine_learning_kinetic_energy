@@ -1,24 +1,23 @@
 import numpy as np
 import pickle
-from machine_learning_kinetic_energy.tools.quantum import quantum1D
+from MLEK.main.quantum_utils import quantum1D
 
 np.random.seed(5)
 
 numOfKpoints = 40
 numOfBasis = 31
-MaxFFTComponent = 10
-VqMagnitude = np.linspace(0, 50, 10)
-samplingSteps = 10
+MaxFFTComponent = 5
+LowerBound, UpperBound = -5, 5
+samplingSteps = 2
 DeltaMu = np.linspace(5, 50, 10)
 
 DataStorage = []
-for numOfFFTComponents in range(2, MaxFFTComponent):
-    for absVq in VqMagnitude:
-        for deltaMu in DeltaMu:
-            for _ in range(samplingSteps):
-                model = quantum1D(numOfBasis, numOfFFTComponents, absVq)
-                KineticEnergyPerCell, ChemicalPotential, _, externalPotential, ElectronDensityPerCell = model(deltaMu, numOfKpoints)
-                DataStorage.append(np.array([*ElectronDensityPerCell, KineticEnergyPerCell]))
+for num_Potential_FFTcmp in range(2, MaxFFTComponent):
+    for deltaMu in DeltaMu:
+        for _ in range(samplingSteps):
+            model = quantum1D(numOfBasis, num_Potential_FFTcmp, LowerBound, UpperBound)
+            KineticEnergyPerCell, ChemicalPotential, _, externalPotential, ElectronDensityPerCell = model(deltaMu, numOfKpoints)
+            DataStorage.append(np.array([*ElectronDensityPerCell, KineticEnergyPerCell]))
 
 Data = np.array(DataStorage)
 np.random.shuffle(Data)
