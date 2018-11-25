@@ -1,30 +1,22 @@
-import numpy as np
-import pickle
-from MLEK.main.quantum_utils import quantum1D
+# database generate
 
-np.random.seed(5)
+import numpy as np 
+from MLEK.main.base import Compute
+from MLEK.main.utils import potential_gen
+from MLEK.main.solver import solver
 
-numOfKpoints = 40
-numOfBasis = 31
-MaxFFTComponent = 5
-LowerBound, UpperBound = -5, 5
-samplingSteps = 2
-DeltaMu = np.linspace(5, 50, 10)
+LOW_NUM_Q = 1
+HIGH_NUM_Q = 10
+LOW_V0 = 0          # absolute value
+HIGH_V0 = 50
+LOW_MU = 5
+HIGH_MU = 20
+RANDOM_STATE = 5
 
-DataStorage = []
-for num_Potential_FFTcmp in range(2, MaxFFTComponent):
-    for deltaMu in DeltaMu:
-        for _ in range(samplingSteps):
-            model = quantum1D(numOfBasis, num_Potential_FFTcmp, LowerBound, UpperBound)
-            KineticEnergyPerCell, ChemicalPotential, _, externalPotential, ElectronDensityPerCell = model(deltaMu, numOfKpoints)
-            DataStorage.append(np.array([*ElectronDensityPerCell, KineticEnergyPerCell]))
+param_gen = potential_gen(LOW_NUM_Q, HIGH_NUM_Q, LOW_V0, HIGH_V0, LOW_MU, HIGH_MU, RANDOM_STATE)
+data = Compute(2, 100, '../data_file/quantum_data', '../data_file/potential_data')
+data.add_solver(solver)
 
-Data = np.array(DataStorage)
-np.random.shuffle(Data)
-fname = '../data_file/quantum1D'
-with open(fname, 'wb') as f:
-    pickle.dump(Data, f)
-
-
-
-
+nk = 40
+nbasis = 30
+data.run(nk, nbasis, param_gen)
