@@ -15,32 +15,23 @@ class Compute(object):
         self.solver = solver
 
     def run(self, nk, nbasis, param_gen):
-        kpoints = np.linspace(0, np.pi, nk)
         observable_storage = []
         potential_storage = []
+        collection = []
+        pool = mp.Pool(self.n_proc)
         for _ in range(self.n_sample):
-            mu, Vq = next(param_gen)
-            collection = []
-            T = 0
-            density = np.zeros(nbasis, dtype=np.complex64)
-            pool = mp.Pool(self.n_proc)
-            for k in kpoints:
-                collection.append(pool.apply_async(self.solver, args=(k, nbasis, mu, Vq)))
-            pool.close()
-            pool.join()
-
-            for item in collection:
-                T_k, density_k = item.get()
-                T += T_k
-                density += density_k
-            T/=nk
-            density/=nk
-            
-            observable_storage.append(np.array([T, *density]))
-            potential_storage.append(np.array([mu, *Vq]))
+            dmu, Vq = next(param_gen)
+            potential_storage.append(np.array([dmu, *Vq]))
+            collection.append(pool.apply_async(self.solver, args=(nk, nbasis, dmu, Vq)))
+        pool.close()
+        pool.join()
         
+        for item in collection:
+            T, density = item.get()
+            observable_storage.append(np.array([T, *density]))
         observable = np.array(observable_storage)
         potential = np.array(potential_storage)
+
         with open(self.out, 'wb') as f:
             pickle.dump(observable, f)
         with open(self.aux, 'wb') as f1:
