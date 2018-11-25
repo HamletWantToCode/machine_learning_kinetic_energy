@@ -26,5 +26,6 @@ def irfft(Aq, n_out):
     for i in range(n_out):
         for k in range(nq):
             ifft_mat[i, k] = np.cos(2*np.pi*k*X[i])
-    Ax = 2*ifft_mat @ Aq
+    ifft_mat[:, 1:] *= 2
+    Ax = ifft_mat @ Aq
     return Ax.real
