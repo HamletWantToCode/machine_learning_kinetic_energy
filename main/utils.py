@@ -18,13 +18,13 @@ def potential_gen(low_nq, high_nq, low_V0, high_V0, low_dmu, high_dmu, random_st
         yield (dmu, Vq)
         i += 1
 
-# math external
-def ifft(Aq, n_out):
+# math external * under debugging !
+def irfft(Aq, n_out):
     X = np.linspace(0, 1, n_out)
     nq = len(Aq)
     ifft_mat = np.zeros((n_out, nq), dtype=np.complex64)
     for i in range(n_out):
         for k in range(nq):
-            ifft_mat[i, k] = np.exp(2j*np.pi*k*X[i])
-    Ax = ifft_mat @ Aq
+            ifft_mat[i, k] = np.cos(2*np.pi*k*X[i])
+    Ax = 2*ifft_mat @ Aq
     return Ax.real

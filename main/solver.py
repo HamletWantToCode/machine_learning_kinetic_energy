@@ -37,7 +37,7 @@ def solver(nk, nbasis, dmu, Vq):
             T_k += 0.5*((k+(i-nbasis//2)*2*np.pi)**2)*(density_mat_kspace[i, i]).real
         T += T_k
         density += density_k
-    return T/nk, density/nk #, En_k
+    return T/nk, density/nk
 
 
 
