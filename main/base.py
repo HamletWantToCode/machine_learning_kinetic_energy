@@ -18,13 +18,13 @@ class Compute(object):
         kpoints = np.linspace(0, np.pi, nk)
         observable_storage = []
         potential_storage = []
-        for i in range(self.n_sample):
+        for _ in range(self.n_sample):
             mu, Vq = next(param_gen)
             collection = []
             T = 0
             density = np.zeros(nbasis, dtype=np.complex64)
             pool = mp.Pool(self.n_proc)
-            for j, k in enumerate(kpoints):
+            for k in kpoints:
                 collection.append(pool.apply_async(self.solver, args=(k, nbasis, mu, Vq)))
             pool.close()
             pool.join()
@@ -33,6 +33,8 @@ class Compute(object):
                 T_k, density_k = item.get()
                 T += T_k
                 density += density_k
+            T/=nk
+            density/=nk
             
             observable_storage.append(np.array([T, *density]))
             potential_storage.append(np.array([mu, *Vq]))

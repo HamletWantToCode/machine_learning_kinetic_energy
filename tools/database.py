@@ -1,6 +1,6 @@
 # database generate
 
-import numpy as np 
+import numpy as np
 from MLEK.main.base import Compute
 from MLEK.main.utils import potential_gen
 from MLEK.main.solver import solver
@@ -14,7 +14,7 @@ HIGH_MU = 20
 RANDOM_STATE = 5
 
 param_gen = potential_gen(LOW_NUM_Q, HIGH_NUM_Q, LOW_V0, HIGH_V0, LOW_MU, HIGH_MU, RANDOM_STATE)
-data = Compute(2, 100, '../data_file/quantum_data', '../data_file/potential_data')
+data = Compute(4, 100, 'data_file/quantum_data', 'data_file/potential_data')
 data.add_solver(solver)
 
 nk = 40
