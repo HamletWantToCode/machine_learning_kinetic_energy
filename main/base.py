@@ -17,18 +17,12 @@ class Compute(object):
     def run(self, nk, nbasis, param_gen):
         observable_storage = []
         potential_storage = []
-        collection = []
-        pool = mp.Pool(self.n_proc)
         for _ in range(self.n_sample):
-            dmu, Vq = next(param_gen)
+            dmu, hamilton_mat, Vq = next(param_gen)
             potential_storage.append(np.array([dmu, *Vq]))
-            collection.append(pool.apply_async(self.solver, args=(nk, nbasis, dmu, Vq)))
-        pool.close()
-        pool.join()
-        
-        for item in collection:
-            T, density = item.get()
+            T, density = self.solver(nk, nbasis, dmu, hamilton_mat))
             observable_storage.append(np.array([T, *density]))
+
         observable = np.array(observable_storage)
         potential = np.array(potential_storage)
 
