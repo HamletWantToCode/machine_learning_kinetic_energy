@@ -2,11 +2,12 @@
 
 import numpy as np
 from mpi4py import MPI
+import time
 import pickle
 from MLEK.main.utils import potential_gen
 from MLEK.main.solver import solver
 
-NSAMPLES = 500
+NSAMPLES = 100
 LOW_NUM_Q = 1
 HIGH_NUM_Q = 30
 LOW_V0 = 0          # absolute value
@@ -36,14 +37,14 @@ POTENTIAL = None
 if ID == 0:
     DATA = np.zeros((NSAMPLES, NBASIS+1), dtype=np.complex64)
     POTENTIAL = np.zeros((NSAMPLES, NBASIS+1), dtype=np.complex64)
+
 comm.Gather(DATA_STORAGE, DATA, root=0)
 comm.Gather(POTENTIAL_STORAGE, POTENTIAL, root=0)
+end = time.time()
 
 if ID == 0:
     with open('../data_file/quantum', 'wb') as f:
         pickle.dump(DATA, f)
     with open('../data_file/potential', 'wb') as f1:
         pickle.dump(POTENTIAL, f1)
-
-
 
