@@ -2,7 +2,6 @@
 
 import numpy as np
 from mpi4py import MPI
-import time
 import pickle
 from MLEK.main.utils import potential_gen
 from MLEK.main.solver import solver
@@ -40,7 +39,6 @@ if ID == 0:
 
 comm.Gather(DATA_STORAGE, DATA, root=0)
 comm.Gather(POTENTIAL_STORAGE, POTENTIAL, root=0)
-end = time.time()
 
 if ID == 0:
     with open('../data_file/quantum', 'wb') as f:
