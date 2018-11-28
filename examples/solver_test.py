@@ -15,14 +15,15 @@ def V_gen(nbasis, V0, max_k):
 nk = 100
 nbasis = 100
 V0 = 10
-hamilton_mat = V_gen(nbasis, V0, 50)
-dmu = 20
-T, dens_q, delta_En_k = solver(nk, nbasis, dmu, hamilton_mat)
+hamilton_mat = V_gen(nbasis, V0, 5)
+ne = 1
+T, mu, dens_q = solver(nk, nbasis, ne, hamilton_mat)
 
-# X = np.linspace(0, 1, 100)
+print(dens_q[0])
+X = np.linspace(0, 1, 100)
 # dens_x = np.fft.irfft(dens_q, 100)*100
 # X = np.r_[np.linspace(0, 0.5, 51), np.linspace(-0.5, 0, 49)] 
-# dens_x = irfft(dens_q, 100)
+dens_x = irfft(dens_q, 100)
 
 # print(delta_En_k)
 # # print(Vq[1])
@@ -34,8 +35,8 @@ T, dens_q, delta_En_k = solver(nk, nbasis, dmu, hamilton_mat)
 # f = lambda x: np.sqrt(omega/np.pi)*np.exp(-omega*x**2)
 # y = f(X)
 
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
-# plt.plot(X, dens_x, 'b')
+plt.plot(X, dens_x, 'b')
 # plt.plot(X, y, 'r')
-# plt.show()
+plt.show()
