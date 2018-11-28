@@ -5,5 +5,5 @@ mpirun=/home/hongbin/anaconda3/bin/mpirun
 date > out
 
 cd tools/
-(time nohup $mpirun -n 3 $python database.py &) >>../out 2>&1
+(time nohup $mpirun -n 4 $python database.py &) >>../out 2>&1
 
