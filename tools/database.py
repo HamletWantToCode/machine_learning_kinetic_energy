@@ -6,14 +6,14 @@ import pickle
 from MLEK.main.utils import potential_gen
 from MLEK.main.solver import solver
 
-NSAMPLES = 100
+NSAMPLES = 500
 LOW_NUM_Q = 1
 HIGH_NUM_Q = 20
 LOW_V0 = 0          # absolute value
 HIGH_V0 = 10
 NE = 1
 NK = 100
-NBASIS = 100
+NBASIS = 50
 
 comm = MPI.COMM_WORLD
 SIZE = comm.Get_size()
