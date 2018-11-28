@@ -1,8 +1,9 @@
 #!/bin/bash
 
-python=/anaconda3/envs/workspace/bin/python
+python=/home/hongbin/anaconda3/envs/project-qml/bin/python
+mpirun=/home/hongbin/anaconda3/bin/mpirun
 date > out
 
 cd tools/
-(time nohup $python database.py &) >>../out 2>&1
+(time nohup $mpirun -n 3 $python database.py &) >>../out 2>&1
 

@@ -6,12 +6,12 @@ import pickle
 from MLEK.main.utils import potential_gen
 from MLEK.main.solver import solver
 
-NSAMPLES = 100
+NSAMPLES = 300
 LOW_NUM_Q = 1
-HIGH_NUM_Q = 30
+HIGH_NUM_Q = 20
 LOW_V0 = 0          # absolute value
-HIGH_V0 = 50
-LOW_dMU = 5
+HIGH_V0 = 5
+LOW_dMU = 45
 HIGH_dMU = 50
 NK = 100
 NBASIS = 100
