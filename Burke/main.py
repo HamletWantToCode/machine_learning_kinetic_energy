@@ -15,15 +15,12 @@ def finiteDifferenceMatrix(n, xstart, xend, potentialFunction):
     T = np.zeros((n, n), np.float64)
     V = np.zeros((n, n), np.float64)
     L = xend - xstart
-    for i in range(n):
-        T[i, i] = -2
-        for j in [max(i-1, 0), min(i+1, n-1)]:
-            if j != i:
-                T[i, j] = 1
+    np.fill_diagonal(T, -2)
+    np.fill_diagonal(T[1:, :-1], 1)
+    np.fill_diagonal(T[:-1, 1:], 1)
     h = L*1.0/(n+1)
-    for i in range(n):
-        x = xstart + h*(i+1)
-        V[i, i] = potentialFunction(x)
+    Vx = [potentialFunction(xstart+h*(i+1)) for i in range(n)]
+    np.fill_diagonal(V, Vx)
     return T*(-0.5*(n+1)**2)/L**2 + V
 
 def electronDensity(Psi, ne, n, xstart, xend):
