@@ -1,28 +1,50 @@
 import pickle
 import numpy as np
 from statslib.main.kernel_ridge import KernelRidge
-from statslib.tools.utils import rbfKernel
+from statslib.tools.utils import rbfKernel, n_split, meanSquareError
+from statslib.main.cross_validation import Cross_validation
 
-with open('/Users/hongbinren/Documents/program/Burke_paper/quantumX1D', 'rb') as f:
+np.random.seed(8)
+
+with open('/Users/hongbinren/Downloads/mnt/project/Burke_paper/quantumX1D', 'rb') as f:
     data = pickle.load(f)
 np.random.shuffle(data)
+train_data = data[:1001]
+test_data = data[1001:]
 
-train_X, train_y = data[:100, :-1], data[:100, -1]
-mean = np.mean(train_y)
-train_y -= mean
+# N=1
+train_n = train_data[train_data[:, 0]==1]
+test_n = test_data[test_data[:, 0]==1]
+train_X, train_y = train_n[:100, 2:], train_n[:100, 1]
+mean_KE = np.mean(train_y)
+train_y /= mean_KE
+test_X, test_y = test_n[:, 2:], test_n[:, 1]
+test_y /= mean_KE
 
-test_X, test_y = data[150:, :-1], data[150:, -1]
-test_y -= mean
+# plot coef contour
+Sigma = np.logspace(-3, 4, 200)
+Lambda = np.logspace(-16, -4, 100)
+xx, yy = np.meshgrid(Sigma, Lambda)
+XY = np.c_[xx.reshape((-1, 1)), yy.reshape((-1, 1))]
+Z = []
+for (sigma, lambda_) in XY:
+    gamma = 1.0/(2*sigma**2)
+    kernel = rbfKernel(gamma)
+    model = KernelRidge(kernel, lambda_)
+    sp = n_split(5, 100, 53)
+    CV = Cross_validation(sp, model, meanSquareError)
+    avg_err = CV.run(train_X, train_y[:, np.newaxis])
+    Z.append(avg_err)
+zz = np.array(Z).reshape(xx.shape)
+surf_data = np.vstack([xx, yy, zz])
 
-kernel = rbfKernel(0.1)
-# kernel = laplaceKernel(0.1)
-model = KernelRidge(kernel, 1e-15)
-model.fit(train_X, train_y[:, np.newaxis])
-predict_y = model.predict(test_X)
-err = np.mean((predict_y - test_y)**2)
-print(err)
+with open('error_surf', 'wb') as f:
+    pickle.dump(surf_data, f)
 
-import matplotlib.pyplot as plt
-plt.plot(test_y, predict_y, 'bo')
-plt.plot(test_y, test_y, 'r')
-plt.show()
+# import matplotlib.pyplot as plt
+# plt.contourf(xx, yy, zz)
+# plt.colorbar()
+# plt.semilogx()
+# plt.semilogy()
+# plt.show()
+
