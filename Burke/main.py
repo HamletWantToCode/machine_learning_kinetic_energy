@@ -49,7 +49,7 @@ def compute(n, ne, A, B, C, xstart=0, xend=1):
     _, eigenFunctions = np.linalg.eigh(H)
     density = electronDensity(eigenFunctions, ne, n, xstart, xend)
     Ek = kineticEnergy(n, xstart, xend, ne, eigenFunctions)
-    return np.array([*density, Ek])
+    return np.array([ne, Ek, *density])
 
 
 

@@ -3,7 +3,7 @@ import numpy as np
 from statslib.main.kernel_ridge import KernelRidge
 from statslib.tools.utils import rbfKernel
 
-with open('/Users/hongbinren/Documents/program/Burke_paper/quantumX1D', 'rb') as f:
+with open('/home/hongbin/Documents/project/MLEK/Burke/quantumX1D', 'rb') as f:
     data = pickle.load(f)
 np.random.shuffle(data)
 

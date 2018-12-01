@@ -12,7 +12,8 @@ b_low, b_high = 0.4, 0.6
 c_low, c_high = 0.03, 0.1
 n_cpu = 4
 N_per_script = int(N_dataSample / n_cpu)
-part_data = np.zeros((N_per_script, N_grid+3))
+part_data = np.zeros((N_per_script, N_grid+4))
+dataStorage = None
 
 comm = MPI.COMM_WORLD
 ID = comm.Get_rank()
@@ -27,7 +28,7 @@ for i in range(N_per_script):
     part_data[i] = data
 
 if ID == 0:
-    dataStorage = np.zeros((N_dataSample, N_grid+3), np.float64)
+    dataStorage = np.zeros((N_dataSample, N_grid+4), np.float64)
 
 comm.Gather(part_data, dataStorage)
 
