@@ -1,5 +1,6 @@
 import pickle
 import numpy as np
+from mpi4py import MPI
 from statslib.main.kernel_ridge import KernelRidge
 from statslib.tools.utils import rbfKernel, n_split, meanSquareError
 from statslib.main.cross_validation import Cross_validation
@@ -22,29 +23,36 @@ test_X, test_y = test_n[:, 2:], test_n[:, 1]
 test_y /= mean_KE
 
 # plot coef contour
-Sigma = np.logspace(-3, 4, 200)
-Lambda = np.logspace(-16, -4, 100)
+n_s, n_l = 20, 10
+Sigma = np.logspace(-2, 4, n_s)
+Lambda = np.logspace(-16, -4, n_l)
 xx, yy = np.meshgrid(Sigma, Lambda)
 XY = np.c_[xx.reshape((-1, 1)), yy.reshape((-1, 1))]
-Z = []
-for (sigma, lambda_) in XY:
+Z = None
+
+comm = MPI.COMM_WORLD
+n_cpu = comm.Get_size()
+ID = comm.Get_rank()
+Elements = len(XY)//n_cpu
+part_XY = XY[ID*Elements:(ID+1)*Elements]
+part_Z = np.zeros(Elements)
+
+for i, (sigma, lambda_) in enumerate(part_XY):
     gamma = 1.0/(2*sigma**2)
     kernel = rbfKernel(gamma)
     model = KernelRidge(kernel, lambda_)
     sp = n_split(5, 100, 53)
     CV = Cross_validation(sp, model, meanSquareError)
     avg_err = CV.run(train_X, train_y[:, np.newaxis])
-    Z.append(avg_err)
-zz = np.array(Z).reshape(xx.shape)
-surf_data = np.vstack([xx, yy, zz])
+    part_Z[i] = avg_err
 
-with open('error_surf', 'wb') as f:
-    pickle.dump(surf_data, f)
+if ID == 0:
+    Z = np.zeros(n_s*n_l)
 
-# import matplotlib.pyplot as plt
-# plt.contourf(xx, yy, zz)
-# plt.colorbar()
-# plt.semilogx()
-# plt.semilogy()
-# plt.show()
+comm.Gather(part_Z, Z, 0)
+
+if ID == 0:
+    surf_data = np.c_[XY, Z.reshape((-1, 1))]
+    with open('error_surf', 'wb') as f:
+        pickle.dump(surf_data, f)
 
