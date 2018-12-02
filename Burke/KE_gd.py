@@ -14,14 +14,16 @@ train_data = data[:1001]
 test_data = data[1001:]
 
 # N=1
-train_n = train_data[train_data[:, 0]==1]
-test_n = test_data[test_data[:, 0]==1]
-train_X, train_y = train_n[:100, 2:], train_n[:100, 1]
+# train_n = train_data[train_data[:, 0]==1]
+# test_n = test_data[test_data[:, 0]==1]
+train_X, train_y = train_data[:400, 2:], train_data[:400, 1]
+mean_X = np.mean(train_X, axis=0, keepdims=True)
+train_X -= mean_X
 mean_KE = np.mean(train_y)
-train_y /= mean_KE
+train_y -= mean_KE
 
-gamma = 1.0/(2*20**2)
-Lambda = 12*1e-14
+gamma = 1.0/(2*18.4207**2)
+Lambda = 3.79269*1e-9
 kernel = rbfKernel(gamma)
 kernel_gd = rbfKernel_gd(gamma)
 model = KernelRidge(kernel, Lambda)
@@ -33,7 +35,7 @@ def KE_gd(dens_X):
     alpha = model.coef_
     KM_gd = kernel_gd(inner_dens_X, train_X)
     gd_X = KM_gd @ alpha
-    return np.squeeze(gd_X)*N
+    return np.squeeze(gd_X)*(N-1)
 
 # compute gradient
 from main import compute, gaussPotential
@@ -47,7 +49,7 @@ N_electron = 1
 N_grid = 500
 new_data = compute(N_grid, N_electron, A, B, C)
 new_dens_X = new_data[2:]
-X = np.linspace(0, 1, N_grid, endpoint=True)
+X = np.linspace(0, 1, N_grid+2, endpoint=True)
 new_V = gaussPotential(A, B, C)
 new_Vx = new_V(X)
 
