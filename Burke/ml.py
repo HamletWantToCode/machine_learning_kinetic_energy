@@ -1,9 +1,7 @@
 import pickle
 import numpy as np
-from mpi4py import MPI
 from statslib.main.kernel_ridge import KernelRidge
-from statslib.tools.utils import rbfKernel, n_split, meanSquareError
-from statslib.main.cross_validation import Cross_validation
+from statslib.tools.utils import rbfKernel, meanSquareError, max_abs_error, mean_abs_error
 
 np.random.seed(8)
 
@@ -22,37 +20,19 @@ train_y /= mean_KE
 test_X, test_y = test_n[:, 2:], test_n[:, 1]
 test_y /= mean_KE
 
-# plot coef contour
-n_s, n_l = 20, 10
-Sigma = np.logspace(-2, 4, n_s)
-Lambda = np.logspace(-16, -4, n_l)
-xx, yy = np.meshgrid(Sigma, Lambda)
-XY = np.c_[xx.reshape((-1, 1)), yy.reshape((-1, 1))]
-Z = None
+gamma = 1.0/(2*20**2)
+Lambda = 12*1e-14
+kernel = rbfKernel(gamma)
+model = KernelRidge(kernel, Lambda)
+model.fit(train_X, train_y[:, np.newaxis])
+predict_y = model.predict(test_X)
 
-comm = MPI.COMM_WORLD
-n_cpu = comm.Get_size()
-ID = comm.Get_rank()
-Elements = len(XY)//n_cpu
-part_XY = XY[ID*Elements:(ID+1)*Elements]
-part_Z = np.zeros(Elements)
+unit_conversion = 627.508474
+err1 = meanSquareError(predict_y, test_y)*unit_conversion
+err2 = mean_abs_error(predict_y, test_y)*unit_conversion
+err3 = max_abs_error(predict_y, test_y)*unit_conversion
 
-for i, (sigma, lambda_) in enumerate(part_XY):
-    gamma = 1.0/(2*sigma**2)
-    kernel = rbfKernel(gamma)
-    model = KernelRidge(kernel, lambda_)
-    sp = n_split(5, 100, 53)
-    CV = Cross_validation(sp, model, meanSquareError)
-    avg_err = CV.run(train_X, train_y[:, np.newaxis])
-    part_Z[i] = avg_err
-
-if ID == 0:
-    Z = np.zeros(n_s*n_l)
-
-comm.Gather(part_Z, Z, 0)
-
-if ID == 0:
-    surf_data = np.c_[XY, Z.reshape((-1, 1))]
-    with open('error_surf', 'wb') as f:
-        pickle.dump(surf_data, f)
-
+print("""
+    mean abs error           mean square error            max abs error
+         %.2f                      %.2f                      %.2f
+        """ %(err1, err2, err3))
