@@ -3,9 +3,9 @@ import numpy as np
 from statslib.main.kernel_ridge import KernelRidge
 from statslib.tools.utils import rbfKernel, meanSquareError, max_abs_error, mean_abs_error
 
-np.random.seed(8)
+np.random.seed(11)
 
-with open('/Users/hongbinren/Downloads/mnt/project/Burke_paper/quantumX1D', 'rb') as f:
+with open('/media/hongbin/Elements/project/Burke_paper/quantumX1D', 'rb') as f:
     data = pickle.load(f)
 np.random.shuffle(data)
 train_data = data[:1001]
