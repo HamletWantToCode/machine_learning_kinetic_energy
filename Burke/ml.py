@@ -5,7 +5,7 @@ from statslib.main.kernel_ridge import KernelRidge
 from statslib.tools.utils import rbfKernel, n_split, meanSquareError
 from statslib.main.cross_validation import Cross_validation
 
-np.random.seed(5)
+np.random.seed(11)
 
 with open('/media/hongbin/Elements/project/Burke_paper/quantumX1D', 'rb') as f:
     data = pickle.load(f)
@@ -23,9 +23,9 @@ test_X, test_y = test_n[:, 2:], test_n[:, 1]
 test_y /= mean_KE
 
 # plot coef contour
-n_s, n_l = 20, 10
-Sigma = np.logspace(-2, 2, n_s)
-Lambda = np.logspace(-16, -4, n_l)
+n_s, n_l = 50, 40
+Sigma = np.logspace(-2, 3, n_s)
+Lambda = np.logspace(-16, -3, n_l)
 xx, yy = np.meshgrid(Sigma, Lambda)
 XY = np.c_[xx.reshape((-1, 1)), yy.reshape((-1, 1))]
 Z = None
@@ -41,7 +41,7 @@ for i, (sigma, lambda_) in enumerate(part_XY):
     gamma = 1.0/(2*sigma**2)
     kernel = rbfKernel(gamma)
     model = KernelRidge(kernel, lambda_)
-    sp = n_split(5, 100, 11)
+    sp = n_split(5, 100, 5)
     CV = Cross_validation(sp, model, meanSquareError)
     avg_err = CV.run(train_X, train_y[:, np.newaxis])
     part_Z[i] = avg_err
