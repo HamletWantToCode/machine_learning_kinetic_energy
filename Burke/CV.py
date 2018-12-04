@@ -2,8 +2,9 @@ import pickle
 import numpy as np
 from mpi4py import MPI
 from statslib.main.kernel_ridge import KernelRidge
-from statslib.tools.utils import rbfKernel, n_split, meanSquareError
+from statslib.tools.utils import rbfKernel, meanSquareError
 from statslib.main.cross_validation import Cross_validation
+from sklearn.model_selection import StratifiedKFold
 
 np.random.seed(8)
 
@@ -14,16 +15,18 @@ train_data = data[:1001]
 test_data = data[1001:]
 
 # N=1
-train_n = train_data[train_data[:, 0]==1]
-test_n = test_data[test_data[:, 0]==1]
-train_X, train_y = train_n[:100, 2:], train_n[:100, 1]
+# train_n = train_data[train_data[:, 0]==1]
+# test_n = test_data[test_data[:, 0]==1]
+train_X, train_y = train_data[:400, 2:], train_data[:400, 1]
 mean_X = np.mean(train_X, axis=0, keepdims=True)
 train_X -= mean_X
 mean_KE = np.mean(train_y)
 train_y -= mean_KE
-test_X, test_y = test_n[:, 2:], test_n[:, 1]
-test_X -= mean_X
-test_y -= mean_KE
+# test_X, test_y = test_n[:, 2:], test_n[:, 1]
+# test_X -= mean_X
+# test_y -= mean_KE
+labels = train_data[:400, 0]
+skr = StratifiedKFold(5, True, 7)
 
 # plot coef contour
 n_s, n_l = 50, 20
@@ -44,7 +47,7 @@ for i, (sigma, lambda_) in enumerate(part_XY):
     gamma = 1.0/(2*sigma**2)
     kernel = rbfKernel(gamma)
     model = KernelRidge(kernel, lambda_)
-    sp = n_split(5, 100, 53)
+    sp = skr.split(train_X, labels)
     CV = Cross_validation(sp, model, meanSquareError)
     avg_err = CV.run(train_X, train_y[:, np.newaxis])
     part_Z[i] = avg_err
