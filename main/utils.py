@@ -1,13 +1,13 @@
 import numpy as np
 
 # potential generator
-def potential_gen(nbasis, nq, low_V0, high_V0, ne, random_state):
+def potential_gen(nbasis, low_nq, high_nq, low_V0, high_V0, ne, random_state):
     np.random.seed(random_state)
     while True:
         # if i>maxiters:
         #     print('run out of the maximum iterations !')
         #     break
-        # nq = np.random.randint(low_nq, high_nq)
+        nq = np.random.randint(low_nq, high_nq)
         Vq = np.zeros(nbasis, dtype=np.complex64)
         hamilton_mat = np.zeros((nbasis, nbasis), dtype=np.complex64)
         V0 = np.random.uniform(low_V0, high_V0)
