@@ -1,7 +1,7 @@
 # compute gradient of KE functional
 
 import pickle
-import numpy as np 
+import numpy as np
 from statslib.tools.utils import rbfKernel, rbfKernel_gd
 from statslib.main.kernel_ridge import KernelRidge
 
@@ -22,7 +22,7 @@ train_X -= mean_X
 mean_KE = np.mean(train_y)
 train_y -= mean_KE
 
-gamma = 1.0/(2*18.4207**2)
+gamma = 1.0/(2*40.4207**2)
 Lambda = 3.79269*1e-9
 kernel = rbfKernel(gamma)
 kernel_gd = rbfKernel_gd(gamma)
@@ -53,7 +53,7 @@ X = np.linspace(0, 1, N_grid+2, endpoint=True)
 new_V = gaussPotential(A, B, C)
 new_Vx = new_V(X)
 
-import matplotlib.pyplot as plt  
+import matplotlib.pyplot as plt
 learn_dT = KE_gd(new_dens_X)
 plt.plot(X, learn_dT, 'b', alpha=0.8)
 plt.plot(X, -new_Vx, 'r')
