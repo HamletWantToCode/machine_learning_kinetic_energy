@@ -6,7 +6,7 @@ import pickle
 from MLEK.main.utils import potential_gen
 from MLEK.main.solver import solver
 
-NSAMPLES = 200
+NSAMPLES = 100
 LOW_NUM_Q = 1
 HIGH_NUM_Q = 5
 LOW_V0 = 5          # absolute value
