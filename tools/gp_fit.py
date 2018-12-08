@@ -16,36 +16,58 @@ index = np.arange(0, nsamples, 1, dtype='int')
 np.random.shuffle(index)
 
 # build train/test set
-train_X, train_y, train_dy = data[index[:50], 1:], data[index[:50], 0], potential[index[:50]]
-test_X, test_y, test_dy = data[index[100:], 1:], data[index[100:], 0], potential[index[100:]]
+train_X, train_y, train_dy = data[index[:50], 1:], data[index[:50], 0], -potential[index[:50]]
+test_X, test_y, test_dy = data[index[80:], 1:], data[index[80:], 0], -potential[index[80:]]
 mean_y = np.mean(train_y)
-mean_dy = np.mean(train_dy, axis=0)
-train_dy -= mean_dy
+# mean_dy = np.mean(train_dy, axis=0)
+# train_dy -= mean_dy
 train_y -= mean_y
 train_y_ = np.r_[train_y, train_dy.reshape(-1)]
 test_y -= mean_y
 
-gamma = 8
+gamma = 1
 kernel = rbfKernel(gamma)
 kernel_gd = rbfKernel_gd(gamma)
 kernel_hess =rbfKernel_hess(gamma)
-model = Gauss_Process_Regressor(kernel, 1e-3, kernel_gd, kernel_hess)
+model = Gauss_Process_Regressor(kernel, 1e-5, kernel_gd, kernel_hess)
 model.fit(train_X, train_y_[:, np.newaxis])
-predict_y, predict_yerr = model.predict(test_X)
+predict_y, predict_yerr = model.predict(train_X)
 
-err_y = meanSquareError(predict_y, test_y)
-print(err_y)
+## predict derivative and variance
+# K = kernel(train_X)
+# Kgd = kernel_gd(train_X)
+# Khess = kernel_hess(train_X)
+# predict_dy = (Kgd @ model.coef_).reshape(train_dy.shape)
+# predict_dy_err = np.diag(Khess - Kgd @ np.linalg.pinv(K) @ Kgd.T).reshape(train_dy.shape)
 
-K_star = np.c_[kernel_gd(test_X, train_X), kernel_hess(test_X, train_X)]
-predict_dy = K_star @ model.coef_
-predict_dy = predict_dy.reshape(test_dy.shape)
+# Kgd = kernel_gd(train_X)
+# Khess = kernel_hess(train_X)
+# K_star = np.c_[Kgd, Khess]
+# predict_dy = (K_star @ model.coef_).reshape(train_dy.shape)
 
 import matplotlib.pyplot as plt
-X = np.linspace(0, 1, 100)
-Vq_pred = predict_dy[5]
-Vq_true = test_dy[5]
-Vx_true = irfft(Vq_true, 100)
-Vx_pred = irfft(Vq_pred, 100)
-plt.plot(X, Vx_pred, 'b')
-plt.plot(X, Vx_true, 'r')
+# fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+plt.plot(train_y, predict_y, 'bo')
+plt.plot(train_y, train_y, 'r')
+
+# ax2.plot(train_dy[0], predict_dy[0], 'bo')
 plt.show()
+
+# err_y = meanSquareError(predict_y, test_y)
+# print(err_y)
+
+# K_star = np.c_[kernel_gd(test_X, train_X), kernel_hess(test_X, train_X)]
+# predict_dy = K_star @ model.coef_
+# predict_dy = predict_dy.reshape(test_dy.shape)
+
+# err_dy = np.sum((predict_dy-test_dy)**2, axis=1)
+# print(err_dy)
+
+# import matplotlib.pyplot as plt
+# X = np.linspace(0, 1, 100)
+# dT_predict = irfft(predict_dy[55], 100)
+# dT_true = irfft(test_dy[55], 100)
+# plt.plot(X, dT_true, 'r')
+# plt.plot(X, dT_predict, 'b')
+# plt.show()
+

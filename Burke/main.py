@@ -21,7 +21,7 @@ def finiteDifferenceMatrix(n, xstart, xend, potentialFunction):
     h = L*1.0/(n+1)
     Vx = [potentialFunction(xstart+h*(i+1)) for i in range(n)]
     np.fill_diagonal(V, Vx)
-    return T*(-0.5*(n+1)**2)/L**2 + V
+    return T*(-0.5*(n+1)**2)/L**2 + V, Vx
 
 def electronDensity(Psi, ne, n, xstart, xend):
     # not consider spin
@@ -45,11 +45,11 @@ def kineticEnergy(n, xstart, xend, ne, Psi):
 
 def compute(n, ne, A, B, C, xstart=0, xend=1):
     potential = gaussPotential(A, B, C)
-    H = finiteDifferenceMatrix(n, xstart, xend, potential)
+    H, Vx = finiteDifferenceMatrix(n, xstart, xend, potential)
     _, eigenFunctions = np.linalg.eigh(H)
     density = electronDensity(eigenFunctions, ne, n, xstart, xend)
     Ek = kineticEnergy(n, xstart, xend, ne, eigenFunctions)
-    return np.array([ne, Ek, *density])
+    return np.array([ne, Ek, *density]), np.array([ne, 0, *Vx, 0])
 
 
 
