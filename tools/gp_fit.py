@@ -7,9 +7,9 @@ from statslib.tools.utils import rbfKernel, rbfKernel_gd, rbfKernel_hess, meanSq
 from MLEK.main.utils import irfft
 
 np.random.seed(3)
-with open('/home/hongbin/Documents/project/MLEK/data_file/quantum', 'rb') as f:
+with open('/Users/hongbinren/Documents/program/MLEK/data_file/quantum', 'rb') as f:
     data = pickle.load(f)
-with open('/home/hongbin/Documents/project/MLEK/data_file/potential', 'rb') as f1:
+with open('/Users/hongbinren/Documents/program/MLEK/data_file/potential', 'rb') as f1:
     potential = pickle.load(f1)
 nsamples = data.shape[0]
 index = np.arange(0, nsamples, 1, dtype='int')
