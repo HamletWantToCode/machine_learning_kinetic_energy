@@ -5,7 +5,7 @@ from statslib.tools.utils import rbfKernel, meanSquareError, max_abs_error, mean
 
 np.random.seed(8)
 
-with open('/Users/hongbinren/Downloads/mnt/project/Burke_paper/quantumX1D', 'rb') as f:
+with open('/media/hongbin/Elements/project/Burke_paper/quantumX1D', 'rb') as f:
     data = pickle.load(f)
 np.random.shuffle(data)
 train_data = data[:1001]

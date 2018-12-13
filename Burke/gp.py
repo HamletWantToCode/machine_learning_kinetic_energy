@@ -8,17 +8,13 @@ np.random.seed(8)
 
 with open('/Users/hongbinren/Downloads/mnt/project/Burke_paper/quantumX1D', 'rb') as f:
     data = pickle.load(f)
-np.random.shuffle(data)
-train_data, test_data = data[:1001], data[1001:]
-# with open('/Users/hongbinren/Downloads/mnt/project/Burke_paper/potentialX1D', 'rb') as f1:
-#     potential = pickle.load(f1)
-# nsamples = data.shape[0]
-# index = np.arange(0, nsamples, 1, dtype='int')
-# np.random.shuffle(index)
-# train_data, train_potential = data[index[:40]], potential[index[:40]]
-# test_data, test_potential = data[index[60:]], potential[index[60:]]
-
-
+with open('/home/hongbin/Documents/project/MLEK/Burke/potentialX1D', 'rb') as f1:
+    potential = pickle.load(f1)
+nsamples = data.shape[0]
+index = np.arange(0, nsamples, 1, dtype='int')
+np.random.shuffle(index)
+train_data, train_potential = data[index[:500]], potential[index[:500]]
+test_data, test_potential = data[index[700:800]], potential[index[700:800]]
 
 # N=1
 # scaler = 0.06
