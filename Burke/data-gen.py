@@ -5,7 +5,7 @@ from main import compute
 import numpy as np
 from mpi4py import MPI
 
-N_dataSample = 100
+N_dataSample = 2000
 N_grid = 20
 a_low, a_high = 1, 10
 b_low, b_high = 0.4, 0.6

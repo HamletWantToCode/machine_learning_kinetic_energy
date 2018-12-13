@@ -12,8 +12,8 @@ with open('/home/hongbin/Documents/project/MLEK/Burke/potentialX1D', 'rb') as f1
 nsamples = data.shape[0]
 index = np.arange(0, nsamples, 1, dtype='int')
 np.random.shuffle(index)
-train_data, train_potential = data[index[:40]], potential[index[:40]]
-test_data, test_potential = data[index[60:]], potential[index[60:]]
+train_data, train_potential = data[index[:500]], potential[index[:500]]
+test_data, test_potential = data[index[700:800]], potential[index[700:800]]
 
 # N=1
 train_data_single, train_potential_single = train_data[train_data[:, 0]==1], train_potential[train_potential[:, 0]==1]
@@ -30,20 +30,20 @@ gamma = 0.01
 kernel = rbfKernel(gamma)
 kernel_gd = rbfKernel_gd(gamma)
 kernel_hess = rbfKernel_hess(gamma)
-model = Gauss_Process_Regressor(kernel, 1e-5) #  kernel_gd, kernel_hess)
-model.fit(train_X, train_y[:, np.newaxis])
+model = Gauss_Process_Regressor(kernel, 1e-3, kernel_gd, kernel_hess)
+model.fit(train_X, train_y_[:, np.newaxis])
 y_pred, y_err = model.predict(test_X)
 
-# K_star = np.c_[kernel_gd(test_X, train_X), kernel_hess(test_X, train_X)]
-# predict_dy = K_star @ model.coef_
-# predict_dy = predict_dy.reshape(test_dy.shape)
-K_star = kernel_gd(test_X, train_X)
+K_star = np.c_[kernel_gd(test_X, train_X), kernel_hess(test_X, train_X)]
 predict_dy = K_star @ model.coef_
 predict_dy = predict_dy.reshape(test_dy.shape)
+# K_star = kernel_gd(test_X, train_X)
+# predict_dy = K_star @ model.coef_
+# predict_dy = predict_dy.reshape(test_dy.shape)
 
 import matplotlib.pyplot as plt
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 6))
-ax1.plot(test_y, y_pred, 'bo')
+ax1.plot(test_y, (1./25)*y_pred, 'bo')
 ax1.plot(test_y, test_y, 'r')
 X = np.linspace(0, 1, 22)
 ax2.plot(X, test_dy[7], 'r')
