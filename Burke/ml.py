@@ -12,19 +12,17 @@ train_data = data[:1001]
 test_data = data[1001:]
 
 # N=1
-train_n = train_data[train_data[:, 0]==1]
-test_n = test_data[test_data[:, 0]==1]
-train_X, train_y = train_n[:100, 2:], train_n[:100, 1]
+train_X, train_y = train_data[:400, 2:], train_data[:400, 1]
 mean_X = np.mean(train_X, axis=0, keepdims=True)
 train_X -= mean_X
 mean_KE = np.mean(train_y)
 train_y -= mean_KE
-test_X, test_y = test_n[:, 2:], test_n[:, 1]
+test_X, test_y = test_data[:, 2:], test_data[:, 1]
 test_X -= mean_X
 test_y -= mean_KE
 
-gamma = 1.0/(2*18.4207**2)
-Lambda = 3.79269*1e-9
+gamma = 1.0/(2*47.1486636**2)
+Lambda = 4.832930238571752e-11
 kernel = rbfKernel(gamma)
 model = KernelRidge(kernel, Lambda)
 model.fit(train_X, train_y[:, np.newaxis])
@@ -39,3 +37,8 @@ print("""
     mean abs error           mean square error            max abs error
          %.2f                      %.2f                      %.2f
         """ %(err1, err2, err3))
+
+import matplotlib.pyplot as plt
+plt.plot(test_y[::50], test_y[::50], 'r')
+plt.plot(test_y[::50], predict_y[::50], 'bo')
+plt.show()
