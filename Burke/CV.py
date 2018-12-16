@@ -8,24 +8,16 @@ from sklearn.model_selection import StratifiedKFold
 
 np.random.seed(8)
 
-with open('/media/hongbin/Elements/project/Burke_paper/quantumX1D', 'rb') as f:
+with open('quantumX1D', 'rb') as f:
     data = pickle.load(f)
 np.random.shuffle(data)
 train_data = data[:1001]
 test_data = data[1001:]
 
-# N=1
-# train_n = train_data[train_data[:, 0]==1]
-# test_n = test_data[test_data[:, 0]==1]
-train_X, train_y = train_data[:400, 2:], train_data[:400, 1]
-mean_X = np.mean(train_X, axis=0, keepdims=True)
-train_X -= mean_X
-mean_KE = np.mean(train_y)
-train_y -= mean_KE
-# test_X, test_y = test_n[:, 2:], test_n[:, 1]
-# test_X -= mean_X
-# test_y -= mean_KE
-labels = train_data[:400, 0]
+train_single = train_data[train_data[:, 0]==1]
+
+train_X, train_y = train_single[:200, 2:], train_single[:200, 1]
+labels = train_single[:200, 0]
 skr = StratifiedKFold(5, True, 7)
 
 # plot coef contour
