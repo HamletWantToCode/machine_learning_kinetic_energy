@@ -1,6 +1,6 @@
 # projected gradient
 
-import numpy as np 
+import numpy as np
 import pickle
 from statslib.main.kernel_ridge import KernelRidge
 from statslib.tools.utils import rbfKernel, rbfKernel_gd
@@ -8,9 +8,9 @@ from statslib.tools.utils import rbfKernel, rbfKernel_gd
 
 np.random.seed(9)
 
-with open('/Users/hongbinren/Documents/program/MLEK/Burke/quantumX1D', 'rb') as f:
+with open('/home/hongbin/Documents/project/MLEK/Burke/quantumX1D', 'rb') as f:
     data = pickle.load(f)
-with open('/Users/hongbinren/Documents/program/MLEK/Burke/potentialX1D', 'rb') as f1:
+with open('/home/hongbin/Documents/project/MLEK/Burke/potentialX1D', 'rb') as f1:
     potential = pickle.load(f1)
 nsamples = data.shape[0]
 index = np.arange(0, nsamples, 1, dtype='int')
