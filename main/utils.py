@@ -1,14 +1,14 @@
 import numpy as np
 
 # potential generator
-def potential_gen(nbasis, low_nq, high_nq, low_V0, high_V0, ne, random_state):
+def potential_gen(nbasis, nq, max_q, low_V0, high_V0, ne, random_state):
     np.random.seed(random_state)
-    NG = np.arange(1, nbasis, 1)
+    NG = np.arange(1, max_q, 1)
     while True:
         # if i>maxiters:
         #     print('run out of the maximum iterations !')
         #     break
-        nq = np.random.randint(low_nq, high_nq)
+        # nq = np.random.randint(low_nq, high_nq)
         q_index = np.random.choice(NG, size=nq)
         Vq = np.zeros(nbasis, dtype=np.complex64)
         hamilton_mat = np.zeros((nbasis, nbasis), dtype=np.complex64)

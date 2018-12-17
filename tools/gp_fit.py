@@ -1,73 +1,83 @@
-# machine learning with GP
-
+# gauss process fitting
 import pickle
-import numpy as np
-from statslib.main.gauss_process import Gauss_Process_Regressor
-from statslib.tools.utils import rbfKernel, rbfKernel_gd, rbfKernel_hess, meanSquareError
-from MLEK.main.utils import irfft
+import numpy as np 
+from GPML.main.gauss_process import Gauss_Process_Regressor
+from GPML.main.utils import rbfKernel, rbfKernel_gd, rbfKernel_hess
 
-np.random.seed(3)
+np.random.rand(8)
+
 with open('/Users/hongbinren/Documents/program/MLEK/data_file/quantum', 'rb') as f:
     data = pickle.load(f)
 with open('/Users/hongbinren/Documents/program/MLEK/data_file/potential', 'rb') as f1:
     potential = pickle.load(f1)
-nsamples = data.shape[0]
-index = np.arange(0, nsamples, 1, dtype='int')
+n_example = data.shape[0]
+index = np.arange(0, n_example, 1, 'int')
 np.random.shuffle(index)
+train_data, train_potential = data[index[:101]], potential[index[:101]]
+test_data, test_potential = data[index[101:]], potential[index[101:]]
 
-# build train/test set
-train_X, train_y, train_dy = data[index[:50], 1:], data[index[:50], 0], -potential[index[:50]]
-test_X, test_y, test_dy = data[index[80:], 1:], data[index[80:], 0], -potential[index[80:]]
-mean_y = np.mean(train_y)
-# mean_dy = np.mean(train_dy, axis=0)
-# train_dy -= mean_dy
-train_y -= mean_y
-train_y_ = np.r_[train_y, train_dy.reshape(-1)]
-test_y -= mean_y
+# train-test feature/target
+train_X, train_y, train_dy = np.fft.irfft(train_data[:, 1:], 100, axis=1)*100, train_data[:, 0].real, -np.fft.irfft(train_potential, 100, axis=1)*100
+test_X, test_y, test_dy = np.fft.irfft(test_data[:, 1:], 100, axis=1)*100, test_data[:, 0].real, -np.fft.irfft(test_potential, 100, axis=1)*100 
 
-gamma = 1
-kernel = rbfKernel(gamma)
-kernel_gd = rbfKernel_gd(gamma)
-kernel_hess =rbfKernel_hess(gamma)
-model = Gauss_Process_Regressor(kernel, 1e-5, kernel_gd, kernel_hess)
-model.fit(train_X, train_y_[:, np.newaxis])
-predict_y, predict_yerr = model.predict(train_X)
+# compress the data
+n_train = train_X.shape[0]
+Mean_X = np.mean(train_X, axis=0)
+Mean_dy = np.mean(train_dy, axis=0)
+Cov = (train_X - Mean_X).T @ (train_X - Mean_X) / n_train
+U, S, _ = np.linalg.svd(Cov)
+rank = 2
+train_X_t = (train_X - Mean_X) @ U[:, :rank]
+train_dy_t = (train_dy - Mean_dy) @ U[:, :rank]
+## standardize train
+mean_dy_t = np.mean(train_dy_t, axis=0)
+var_dy_t = np.sqrt(np.var(train_dy_t, axis=0))
+train_dy_std = (train_dy_t - mean_dy_t) / var_dy_t
+project_train_dy = np.sum(train_dy_t[:, :, np.newaxis]*(U[:, :rank]).T, axis=1) + Mean_dy
 
-## predict derivative and variance
-# K = kernel(train_X)
-# Kgd = kernel_gd(train_X)
-# Khess = kernel_hess(train_X)
-# predict_dy = (Kgd @ model.coef_).reshape(train_dy.shape)
-# predict_dy_err = np.diag(Khess - Kgd @ np.linalg.pinv(K) @ Kgd.T).reshape(train_dy.shape)
+Mean_y = np.mean(train_y)
+var_y = np.sqrt(np.var(train_y))
+train_y_std = (train_y - Mean_y) / var_y
 
-# Kgd = kernel_gd(train_X)
-# Khess = kernel_hess(train_X)
-# K_star = np.c_[Kgd, Khess]
-# predict_dy = (K_star @ model.coef_).reshape(train_dy.shape)
+train_target = np.r_[train_y_std, train_dy_std.reshape(-1)]
+
+# standardize test
+test_X_t = (test_X - Mean_X) @ U[:, :rank]
+test_y_std = (test_y - Mean_y) / var_y
+test_dy_t = (test_dy - Mean_dy) @ U[:, :rank]
+test_dy_std = (test_dy_t - mean_dy_t) / var_dy_t
+project_test_dy = np.sum(test_dy_t[:, :, np.newaxis]*(U[:, :rank]).T, axis=1) + Mean_dy
+
+# training performance on y and dy
+gamma = 0.1
+sigma = 1e-5
+# optimizer = MCSA_Optimize(0.1, 2000, 1e-4, 10000, verbose=0)
+model = Gauss_Process_Regressor(rbfKernel, None, gradient_on=True, kernel_gd=rbfKernel_gd, kernel_hess=rbfKernel_hess)
+model.fit(train_X_t, train_target[:, np.newaxis], optimize_on=False, gamma=gamma, sigma=sigma)
+y_pred, y_err = model.predict(test_X_t)
+print(model.gamma_, model.sigma_)
+
+predict_KE = y_pred*var_y + Mean_y
+err = (predict_KE - test_y)**2
+
+gamma = model.gamma_
+K_star = np.c_[rbfKernel_gd(gamma, test_X_t, train_X_t), rbfKernel_hess(gamma, test_X_t, train_X_t)]
+predict_project_dy = (K_star @ model.coef_).reshape(test_dy_t.shape)
+predict_project_dy *= var_dy_t
+predict_project_dy += mean_dy_t
+predict_dy = np.sum(predict_project_dy[:, :, np.newaxis]*(U[:, :rank]).T, axis=1) + Mean_dy
+err_dy = np.mean((predict_dy - project_test_dy)**2, axis=1)
 
 import matplotlib.pyplot as plt
-# fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
-plt.plot(train_y, predict_y, 'bo')
-plt.plot(train_y, train_y, 'r')
+n_test = test_X.shape[0]
+fig1, (ax1, ax2) = plt.subplots(2, 1, figsize=(6, 8))
+ax1.plot(np.arange(0, n_test, 1), err, 'b', label='KE')
+ax1.plot(np.arange(0, n_test, 1), err_dy, 'g', label='project gd')
+ax1.set_ylim([0, 5])
+ax1.legend()
 
-# ax2.plot(train_dy[0], predict_dy[0], 'bo')
+X = np.linspace(0, 1, 100)
+ax2.plot(X, project_test_dy[40], 'r', label='project gd')
+ax2.plot(X, predict_dy[40], 'b', label='predict gd', alpha=0.5)
+ax2.legend()
 plt.show()
-
-# err_y = meanSquareError(predict_y, test_y)
-# print(err_y)
-
-# K_star = np.c_[kernel_gd(test_X, train_X), kernel_hess(test_X, train_X)]
-# predict_dy = K_star @ model.coef_
-# predict_dy = predict_dy.reshape(test_dy.shape)
-
-# err_dy = np.sum((predict_dy-test_dy)**2, axis=1)
-# print(err_dy)
-
-# import matplotlib.pyplot as plt
-# X = np.linspace(0, 1, 100)
-# dT_predict = irfft(predict_dy[55], 100)
-# dT_true = irfft(test_dy[55], 100)
-# plt.plot(X, dT_true, 'r')
-# plt.plot(X, dT_predict, 'b')
-# plt.show()
-

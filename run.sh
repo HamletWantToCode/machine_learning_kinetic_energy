@@ -1,7 +1,7 @@
 #!/bin/bash
 
-python=/home/hongbin/anaconda3/envs/project-qml/bin/python
-mpirun=/home/hongbin/anaconda3/bin/mpirun
+python=/anaconda3/envs/workspace/bin/python
+mpirun=/anaconda3/envs/workspace/bin/mpirun
 date > out
 
 cd tools/
