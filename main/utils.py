@@ -1,26 +1,26 @@
 import numpy as np
 
 # potential generator
-def potential_gen(nbasis, nq, max_q, low_V0, high_V0, ne, random_state):
+def potential_gen(nbasis, max_q, low_V0, high_V0, dmu, random_state):
     np.random.seed(random_state)
-    NG = np.arange(1, max_q, 1)
+    assert max_q > 2
+    NG = np.arange(2, max_q, 1, 'int')
     while True:
-        # if i>maxiters:
-        #     print('run out of the maximum iterations !')
-        #     break
-        # nq = np.random.randint(low_nq, high_nq)
-        q_index = np.random.choice(NG, size=nq)
+        nq = np.random.randint(0, max_q-2)
+        if nq == 0:
+            q_index = np.array([1])
+        else:
+            q_index = np.append(np.random.choice(NG, size=nq), 1)
         Vq = np.zeros(nbasis, dtype=np.complex64)
         hamilton_mat = np.zeros((nbasis, nbasis), dtype=np.complex64)
         V0 = np.random.uniform(low_V0, high_V0)
         for i in q_index:
             theta = np.random.uniform(0, 2*np.pi)
-            Vq_conj = -V0*(np.cos(theta) - 1j*np.sin(theta))
+            r0 = np.random.rand()
+            Vq_conj = -V0*r0*(np.cos(theta) - 1j*np.sin(theta))
             Vq[i] = Vq_conj.conjugate()
             np.fill_diagonal(hamilton_mat[i:, :-i], Vq_conj)
-        # dmu = np.random.uniform(low_dmu, high_dmu)
-        yield (hamilton_mat, Vq)
-        # i += 1
+        yield (hamilton_mat, Vq, dmu)
 
 # math external * under debugging !
 def irfft(Aq, n_out):

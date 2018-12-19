@@ -41,7 +41,7 @@ err_y = (pred_y_1 - test_y_1)**2
 err_dy = np.mean((project_pred_dy_1 - project_test_dy_1)**2, axis=1)
 
 import matplotlib.pyplot as plt  
-fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(6, 8))
+fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(4, 8))
 n_test = test_X_1.shape[0]
 test_index = np.arange(0, n_test, 1)
 ax1.plot(test_index, err_y, 'b', label='KE error')
@@ -56,6 +56,9 @@ ax2.plot(X, project_pred_dy_1[45], 'b', label='Predict')
 ax2.set_xlabel('x')
 ax2.set_ylabel(r'$\frac{\delta T}{\delta n(x)}$')
 ax2.legend()
+
+ax3.plot(test_y_1, pred_y_1, 'bo')
+ax3.plot(test_y_1, test_y_1, 'r')
 plt.show()
 # # cross-validation
 # Sigma = np.linspace(1, 100, 50)
