@@ -30,8 +30,7 @@ def solver(nk, nbasis, dmu, hamiton_mat):
             T_k += 0.5*((k+(i-nbasis//2)*2*np.pi)**2)*(density_mat_kspace[i, i]).real
         T += T_k
         density += density_k
-    # mu = (En_k[ne-1] + En_k[ne])/2
-    return T/nk, mu, density/nk,
+    return T/nk, mu, density/nk, 
 
 
 

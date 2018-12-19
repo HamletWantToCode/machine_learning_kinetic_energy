@@ -1,46 +1,26 @@
 import numpy as np
 
 # potential generator
-def potential_gen(nbasis, low_nq, high_nq, max_q, low_V0, high_V0, low_dmu, high_dmu, random_state):
+def potential_gen(nbasis, max_q, low_V0, high_V0, dmu, random_state):
     np.random.seed(random_state)
-    NG = np.arange(2, max_q, 1)
-    DMU = np.arange(low_dmu, high_dmu, 3)
+    assert max_q > 2
+    NG = np.arange(2, max_q, 1, 'int')
     while True:
-        # if i>maxiters:
-        #     print('run out of the maximum iterations !')
-        #     break
-        nq = np.random.randint(low_nq, high_nq)
-        q_index = np.append(np.random.choice(NG, size=nq), 1)
-        # dmu = np.random.uniform(low_dmu, high_dmu, 1)
-        dmu = np.random.choice(DMU, size=1)[0]
+        nq = np.random.randint(0, max_q-2)
+        if nq == 0:
+            q_index = np.array([1])
+        else:
+            q_index = np.append(np.random.choice(NG, size=nq), 1)
         Vq = np.zeros(nbasis, dtype=np.complex64)
         hamilton_mat = np.zeros((nbasis, nbasis), dtype=np.complex64)
         V0 = np.random.uniform(low_V0, high_V0)
         for i in q_index:
             theta = np.random.uniform(0, 2*np.pi)
-            Vq_conj = -V0*(np.cos(theta) - 1j*np.sin(theta))
+            r0 = np.random.rand()
+            Vq_conj = -V0*r0*(np.cos(theta) - 1j*np.sin(theta))
             Vq[i] = Vq_conj.conjugate()
             np.fill_diagonal(hamilton_mat[i:, :-i], Vq_conj)
-        # dmu = np.random.uniform(low_dmu, high_dmu)
         yield (hamilton_mat, Vq, dmu)
-        # i += 1
-
-def potential_gen_test(nbasis, low_fq, high_fq, low_V0, high_V0, low_dmu, high_dmu, random_state):
-    np.random.seed(random_state)
-    while True:
-        # if i>maxiters:
-        #     print('run out of the maximum iterations !')
-        #     break
-        fq = np.random.uniform(low_fq, high_fq)
-        dmu = np.random.uniform(low_dmu, high_dmu, 1)
-        Vq = np.zeros(nbasis, dtype=np.complex64)
-        hamilton_mat = np.zeros((nbasis, nbasis), dtype=np.complex64)
-        V0 = np.random.uniform(low_V0, high_V0)
-        Vq[1] = fq*V0
-        np.fill_diagonal(hamilton_mat[1:, :-1], Vq[1])
-        # dmu = np.random.uniform(low_dmu, high_dmu)
-        yield (hamilton_mat, Vq, dmu)
-        # i += 1
 
 # math external * under debugging !
 def irfft(Aq, n_out):
