@@ -2,10 +2,12 @@
 
 import numpy as np
 import pickle
+from sklearn.cluster import KMeans
 from statslib.main.kernel_ridge import KernelRidge
+from statslib.main.workflow import Workflow
 from statslib.tools.utils import rbfKernel, rbfKernel_gd
-# from GPML.main.optimize import MCSA_Optimize
-
+# from statslib.main.cross_validation import Cross_validation
+ 
 np.random.seed(9)
 
 with open('/home/hongbin/Documents/project/MLEK/Burke/quantumX1D', 'rb') as f:
@@ -15,80 +17,100 @@ with open('/home/hongbin/Documents/project/MLEK/Burke/potentialX1D', 'rb') as f1
 nsamples = data.shape[0]
 index = np.arange(0, nsamples, 1, dtype='int')
 np.random.shuffle(index)
-train_data, train_potential = data[index[:1001]], potential[index[:1001]]
-test_data, test_potential = data[index[1001:]], potential[index[1001:]]
+train_X, train_y, train_dy = data[index[:1001], 2:], data[index[:1001], 1], -potential[index[:1001], 1:]
+test_X, test_y, test_dy = data[index[1001:], 2:], data[index[1001:], 1], -potential[index[1001:], 1:]
 
-# N=1
-train_single = train_data[train_data[:, 0]==1]
-test_single, test_potential_single = test_data[test_data[:, 0]==1], test_potential[test_potential[:, 0]==1]
+# clustering
+cluster = KMeans(4, random_state=5)
+train_labels = cluster.fit_predict(train_X)
+test_labels = cluster.predict(test_X)
 
-train_X, train_y = train_single[:200, 2:], train_single[:200, 1]
-test_X, test_y, test_dy = test_single[:, 2:], test_single[:, 1], -test_potential_single[:, 1:]
+label = 1
 
-n_train = train_X.shape[0]
-n_test = test_X.shape[0]
-mean_x = np.mean(train_X, axis=0)
-Cov = (train_X - mean_x).T @ (train_X - mean_x) / n_train
-U, _, _ = np.linalg.svd(Cov)
-train_X_t = train_X @ U[:, :5]
-test_X_t = test_X @ U[:, :5]
+train_X_1, train_y_1, train_dy_1 = train_X[train_labels==label], train_y[train_labels==label], train_dy[train_labels==label]
+test_X_1, test_y_1, test_dy_1 = test_X[test_labels==label], test_y[test_labels==label], test_dy[test_labels==label]
 
-test_dy_t = test_dy @ U[:, :5]
-project_test_dy = np.sum(test_dy_t[:, :, np.newaxis]*(U[:, :5]).T, axis=1)
+import matplotlib.pyplot as plt 
+# X = np.linspace(0, 1, 502)
+# for i in range(20):
+#     plt.plot(X, train_X_1[i])
+# plt.show()
 
-# model construct
-gamma = 0.01
-Lambda = 1e-10
-kernel = rbfKernel(gamma)
-kernel_gd = rbfKernel_gd(gamma)
-model = KernelRidge(kernel, Lambda)
-model.fit(train_X_t, train_y[:, np.newaxis])
+# build workflow
+gamma = 0.0016973451852941056
+lambda_ = 6.551285568595496e-11
+# Error_y = []
+# Error_dy = []
+# for i in range(1, 20):
+pipe = Workflow(2, gamma, lambda_, rbfKernel, rbfKernel_gd, KernelRidge)
+pipe.fit(train_X_1, train_y_1[:, np.newaxis])
+pred_y_1, pred_dy_1 = pipe.predict(test_X_1)
+project_test_dy_1 = np.sum((test_dy_1 @ pipe.tr_mat_)[:, :, np.newaxis]*pipe.tr_mat_.T, axis=1)
+project_pred_dy_1 = np.sum(pred_dy_1[:, :, np.newaxis]*pipe.tr_mat_.T, axis=1)
+err_y = (pred_y_1 - test_y_1)**2
+err_dy = np.mean((project_pred_dy_1 - project_test_dy_1)**2, axis=1)
+    # Error_y.append(err_y)
+    # Error_dy.append(err_dy)
+# Error_y = np.array(Error_y)
+# Error_dy = np.array(Error_dy)
+# plt.plot(np.arange(0, 19, 1), Error_y, 'bo-')
+# plt.plot(np.arange(0, 19, 1), Error_dy, 'go-')
+# plt.semilogy()
+# plt.show()
 
-# predict
-pred_y = model.predict(test_X_t)
-K_gd = kernel_gd(test_X_t, train_X_t)
-pred_dy_t = (K_gd @ model.coef_).reshape((n_test, 5))
-pred_dy = np.sum(pred_dy_t[:, :, np.newaxis]*(U[:, :5]).T, axis=1)
-# pred_dy = (K_gd @ model.coef_).reshape(test_dy.shape)
-pred_dy *= 501
 
-# performance
-err_y = (pred_y-test_y)**2
-err_dy = np.mean((pred_dy-project_test_dy)**2, axis=1)
+# import matplotlib.pyplot as plt 
+# X = np.linspace(0, 1, 502)
+# for i in range(20):
+#     plt.plot(X, project_pred_dy_1[i])
+# plt.show()
 
-# projector
-# def project_gd(X, dY):
-#     n_ = X.shape[0]
-#     projected_dY = np.zeros_like(dY)
-#     for i in range(n_):
-#         x, dy = X[i], dY[i]
-#         D = np.sqrt(np.sum((x[np.newaxis, :] - train_X)**2, axis=1))
-#         index = np.argsort(D)
-#         neighbor_index = index[:30]
-#         neighbor_X = train_X[neighbor_index]
-#         Diff = train_X - x[np.newaxis, :]
-#         Cov = (Diff.T @ Diff)/30.0
-#         _, S, Vt = np.linalg.svd(Cov)
-#         coef = Vt[:5] @ dy
-#         projected_dy = np.sum(coef[:, np.newaxis]*Vt[:5], axis=0)
-#         projected_dY[i] = projected_dy
-#     return projected_dY
-
-# project_test_dy = project_gd(test_X, test_dy)
-# project_pred_dy = project_gd(test_X, pred_dy)
-
-# err_project_dy = np.mean((project_pred_dy-project_test_dy)**2, axis=1)
-
-import matplotlib.pyplot as plt
-n_test_sample = test_X.shape[0]
-X = np.linspace(0, 1, 502)
+import matplotlib.pyplot as plt  
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(6, 8))
-ax1.plot(np.arange(0, n_test_sample, 1), err_dy, 'g', label='original gd')
-# ax1.plot(np.arange(0, n_test_sample, 1), err_project_dy, 'b', label='project gd')
-ax1.plot(np.arange(0, n_test_sample, 1), err_y, 'y', label='KE')
+n_test = test_X_1.shape[0]
+test_index = np.arange(0, n_test, 1)
+ax1.plot(test_index, err_y, 'b', label='KE error')
+ax1.plot(test_index, err_dy, 'g', label='GD error')
+ax1.set_xlabel('test examples')
+ax1.set_ylabel('error')
 ax1.legend()
-ax2.plot(X, project_test_dy[34], 'r', label='project gd')
-# ax2.plot(X, project_pred_dy[34], 'b', label='project pred')
-ax2.plot(X, pred_dy[34], 'g', label='original pred')
+
+X = np.linspace(0, 1, 502)
+ax2.plot(X, project_test_dy_1[45], 'r', label='True')
+ax2.plot(X, project_pred_dy_1[45], 'b', label='Predict')
+ax2.set_xlabel('x')
+ax2.set_ylabel(r'$\frac{\delta T}{\delta n(x)}$')
 ax2.legend()
 plt.show()
+# # cross-validation
+# Sigma = np.linspace(1, 100, 50)
+# Lambda = np.logspace(-14, -3, 50)
+# ss, ll = np.meshgrid(Sigma, Lambda)
+# Params = np.c_[ss.reshape((-1, 1)), ll.reshape((-1, 1))]
+# Error = []
+
+# for sigma, lambda_ in Params:
+#     gamma = 1.0/(2*sigma**2)
+#     kernel = rbfKernel(gamma)
+#     kernel_gd = rbfKernel_gd(gamma)
+#     model = KernelRidge(kernel, lambda_)
+#     kfold = n_split(5, 200, random_state=5)
+#     CV = Cross_validation(kfold, model, kernel_gd)
+#     error = CV.run(train_X_t, train_y[:, np.newaxis], train_dy_t)
+#     Error.append(error)
+# Error = np.array(Error).reshape(ss.shape)
+# x_min = Error.argmin(axis=0)
+# y_min = Error.argmin(axis=1)
+
+# with open('error_surface', 'wb') as f2:
+#     pickle.dump(Error, f2)
+
+# import matplotlib.pyplot as plt 
+# plt.contourf(ss, ll, Error, 40)
+# plt.plot(ss[x_min, y_min], ll[x_min, y_min], 'ko')
+# plt.semilogx()
+# plt.semilogy()
+# plt.show()
+
+# gamma = 0.0016973451852941056
+# lambda_ = 6.551285568595496e-11
