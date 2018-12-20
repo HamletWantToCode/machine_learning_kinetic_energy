@@ -1,7 +1,7 @@
 import numpy as np
 
 # potential generator
-def potential_gen(nbasis, max_q, low_V0, high_V0, dmu, random_state):
+def potential_gen(nbasis, max_q, low_V0, high_V0, low_dmu, high_dmu, random_state):
     np.random.seed(random_state)
     assert max_q > 2
     NG = np.arange(2, max_q, 1, 'int')
@@ -20,6 +20,7 @@ def potential_gen(nbasis, max_q, low_V0, high_V0, dmu, random_state):
             Vq_conj = -V0*r0*(np.cos(theta) - 1j*np.sin(theta))
             Vq[i] = Vq_conj.conjugate()
             np.fill_diagonal(hamilton_mat[i:, :-i], Vq_conj)
+        dmu = np.random.uniform(low_dmu, high_dmu)
         yield (hamilton_mat, Vq, dmu)
 
 # math external * under debugging !
