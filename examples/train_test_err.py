@@ -10,11 +10,13 @@ with open('/Users/hongbinren/Downloads/mnt/project/ML_periodic/quantum', 'rb') a
     data = pickle.load(f)
 np.random.shuffle(data)
 dens_q = data[:, 1:]
+dens_q_2 = dens_q[data[:, 1].real > 1.8]
 KE = data[:, 0].real
-dens_X = np.fft.irfft(dens_q, 100, axis=1)*100
+KE_2 = KE[data[:, 1].real > 1.8]
+dens_X = np.fft.irfft(dens_q_2, 100, axis=1)*100
 
-train_X, train_y = dens_X[:1000], KE[:1000]
-test_X, test_y = dens_X[2000:3000], KE[2000:3000]
+train_X, train_y = dens_X[:500], KE_2[:500]
+test_X, test_y = dens_X[500:], KE_2[500:]
 
 gamma = np.logspace(-10, 5, 50)
 lambda_ = 0

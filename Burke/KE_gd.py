@@ -31,7 +31,7 @@ test_X_1, test_y_1, test_dy_1 = test_X[test_labels==0], test_y[test_labels==0], 
 # build workflow
 gamma = 0.0016973451852941056
 lambda_ = 6.551285568595496e-11
-pipe = Workflow(5, gamma, lambda_, rbfKernel, rbfKernel_gd, KernelRidge)
+pipe = Workflow(8, gamma, lambda_, rbfKernel, rbfKernel_gd, KernelRidge)
 pipe.fit(train_X_1, train_y_1[:, np.newaxis])
 pred_y_1, pred_dy_1 = pipe.predict(test_X_1)
 
