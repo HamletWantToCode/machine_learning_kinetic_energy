@@ -1,6 +1,6 @@
-# quantum solver 
+# quantum solver
 
-import numpy as np 
+import numpy as np
 from scipy.linalg import eigh
 
 def solver(nk, nbasis, dmu, hamiton_mat):
@@ -13,7 +13,7 @@ def solver(nk, nbasis, dmu, hamiton_mat):
         np.fill_diagonal(hamiton_mat, kinetic_term)
         En_k, Uq_k = eigh(hamiton_mat, overwrite_a=True, overwrite_b=True)
         # compute mu
-        if k==0:
+        if k == 0:
             mu = En_k[0] + dmu
         # compute electron density
         # compute kinetic energy
