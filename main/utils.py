@@ -6,7 +6,7 @@ def potential_gen(nbasis, max_q, V0, mu, random_state):
     assert max_q > 2
     NG = np.arange(2, max_q, 1, 'int')
     while True:
-        nq = np.random.randint(0, max_q-2)
+        nq = np.random.randint(0, max_q-2)      # nq is number of non-zero k components other than 0 and 1 component
         if nq == 0:
             q_index = np.array([1])
         else:
@@ -21,7 +21,6 @@ def potential_gen(nbasis, max_q, V0, mu, random_state):
             np.fill_diagonal(hamilton_mat[i:, :-i], Vq_conj)
         yield (hamilton_mat, Vq, mu)
 
-# math external * under debugging !
 def irfft(Aq, n_out):
     X = np.linspace(0, 1, n_out)
     nq = len(Aq)
