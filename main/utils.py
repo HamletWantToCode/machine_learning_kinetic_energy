@@ -1,29 +1,28 @@
 import numpy as np
 
 # potential generator
-def potential_gen(nbasis, max_q, low_V0, high_V0, low_dmu, high_dmu, random_state):
+def potential_gen(nbasis, max_q, V0, ne, random_state):
     np.random.seed(random_state)
     assert max_q > 2
     NG = np.arange(2, max_q, 1, 'int')
     while True:
-        nq = np.random.randint(0, max_q-2)
+        nq = np.random.randint(0, max_q-2)      # nq is number of non-zero k components other than 0 and 1 component
         if nq == 0:
             q_index = np.array([1])
         else:
             q_index = np.append(np.random.choice(NG, size=nq), 1)
         Vq = np.zeros(nbasis, dtype=np.complex64)
         hamilton_mat = np.zeros((nbasis, nbasis), dtype=np.complex64)
-        V0 = np.random.uniform(low_V0, high_V0)
+        # V0 = np.random.uniform(low_V0, high_V0)
         for i in q_index:
             theta = np.random.uniform(0, 2*np.pi)
             r0 = np.random.rand()
             Vq_conj = -V0*r0*(np.cos(theta) - 1j*np.sin(theta))
             Vq[i] = Vq_conj.conjugate()
             np.fill_diagonal(hamilton_mat[i:, :-i], Vq_conj)
-        dmu = np.random.uniform(low_dmu, high_dmu)
-        yield (hamilton_mat, Vq, dmu)
+        # dmu = np.random.uniform(low_dmu, high_dmu)
+        yield (hamilton_mat, Vq, ne)
 
-# math external * under debugging !
 def irfft(Aq, n_out):
     X = np.linspace(0, 1, n_out)
     nq = len(Aq)

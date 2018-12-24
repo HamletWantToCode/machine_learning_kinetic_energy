@@ -1,53 +1,53 @@
-# predict value and gradient
-
 import pickle
 import numpy as np 
-from statslib.main.workflow import Workflow
+import matplotlib.pyplot as plt
 from statslib.main.kernel_ridge import KernelRidge
+from statslib.main.workflow import Workflow
 from statslib.tools.utils import rbfKernel, rbfKernel_gd, n_split
 from statslib.main.cross_validation import Cross_validation
 
-with open('/Users/hongbinren/Downloads/mnt/project/ML_periodic/quantum', 'rb') as f:
+np.random.seed(5940232)
+
+with open('../data_file/quantum', 'rb') as f:
     data = pickle.load(f)
-with open('/Users/hongbinren/Downloads/mnt/project/ML_periodic/potential', 'rb') as f1:
-    potential = pickle.load(f1)
-index = np.arange(0, data.shape[0], 1, 'int')
+with open('../data_file/potential', 'rb') as f1:
+    Vq = pickle.load(f1)
+n = data.shape[0]
+dens_X, Ek, Vx = np.fft.irfft(data[:, 1:], 100, axis=1)*100, data[:, 0].real, np.fft.irfft(Vq, 100, axis=1)*100
+index = np.arange(0, n, 1, 'int')
 np.random.shuffle(index)
-data_q, potential_q = data[:, 1:], potential
-data_X, potential_X = np.fft.irfft(data_q, 100, axis=1), np.fft.irfft(potential_q, 100, axis=1)
-train_X, train_y, train_dy = data_X[index[:1000]], data[index[:1000], 0].real, -potential_X[index[:1000]]
-test_X, test_y, test_dy = data_X[index[2000:3000]], data[index[2000:3000], 0].real, -potential_X[index[2000:3000]]
+train_X, train_y, train_dy = dens_X[index[:500]], Ek[index[:500]], -Vx[index[:500]]
+test_X, test_y, test_dy = dens_X[index[500:]], Ek[index[500:]], -Vx[index[500:]]
 
-Gamma, Lambda = np.logspace(-10, -5, 20), np.logspace(-10, -1, 20)
-gg, ll = np.meshgrid(Gamma, Lambda)
-Params = np.c_[gg.reshape((-1, 1)), ll.reshape((-1, 1))]
+# gamma = 0.002811768697974228
+# lambda_ = 4.291934260128778e-06
+
+gamma = np.logspace(-5, -1, 50)
+lambda_ = np.logspace(-14, -5, 50)
+gg, ll = np.meshgrid(gamma, lambda_)
+Parameters = np.c_[gg.reshape((-1,1)), ll.reshape((-1,1))]
 Error = []
-for g, l in Params:
-    workflow = Workflow(2, gamma, lambda_, rbfKernel, rbfKernel_gd, KernelRidge)
-    kfold = n_split(10, 1000, random_state=5)
-    CV = Cross_validation(kfold, workflow)
-    error = CV.run(train_X, train_y[:, np.newaxis], train_dy)
-    Error.append(error)
-Error = np.array(Error).reshape(gg.shape)
+for g, l in Parameters:
+    workflow = Workflow(n_components=2, gamma=g, lambda_=l, kernel=rbfKernel, kernel_gd=rbfKernel_gd, model=KernelRidge)
+    sp = n_split(5, 500, random_state=6567)
+    cv = Cross_validation(sp, workflow)
+    avgerr = cv.run(train_X, train_y[:, np.newaxis], train_dy)
+    Error.append(avgerr)
+Error_surf = np.array(Error).reshape(gg.shape)
 
-import pickle
-with open('data_file/error_surf', 'wb') as f1:
-    pickle.dump(Error, f1)
+with open('error_surf', 'wb') as f2:
+    pickle.dump(Error_surf, f2)
 
-x_min, y_min = Error.argmin()//20, Error.argmin()%20
-print(gg[x_min, y_min])
-print(ll[x_min, y_min])
-print(Error[x_min, y_min])
+x_min, y_min = Error_surf.argmin()//50, Error_surf.argmin()%50
+print(gg[x_min, y_min], ll[x_min, y_min])
 
-import matplotlib.pyplot as plt 
-plt.contourf(gg, ll, np.log(Error), 40)
-plt.plot(gg[x_min, y_min], ll[x_min, y_min], 'ko')
+import matplotlib.pyplot as plt
+plt.contourf(gg, ll, np.log(Error_surf), 50)
 plt.xlabel(r'$\gamma$')
 plt.ylabel(r'$\lambda$')
+plt.plot(gg[x_min, y_min], ll[x_min, y_min], 'ko')
+plt.colorbar()
 plt.semilogx()
 plt.semilogy()
-plt.colorbar()
-plt.savefig('data_file/error_surf.png')
-
-    
+plt.show()
 
