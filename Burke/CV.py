@@ -1,56 +1,49 @@
 import pickle
 import numpy as np
-from mpi4py import MPI
-from statslib.main.kernel_ridge import KernelRidge
-from statslib.tools.utils import rbfKernel, meanSquareError
+from statslib.main.workflow import Workflow
 from statslib.main.cross_validation import Cross_validation
-from sklearn.model_selection import StratifiedKFold
+from statslib.main.kernel_ridge import KernelRidge
+from statslib.tools.utils import n_split, rbfKernel, rbfKernel_gd
 
-np.random.seed(8)
+np.random.seed(83223)
 
 with open('quantumX1D', 'rb') as f:
     data = pickle.load(f)
-np.random.shuffle(data)
-train_data = data[:1001]
-test_data = data[1001:]
+with open('potentialX1D', 'rb') as f1:
+    potential = pickle.load(f1)
+ne = 1
+dens_X, Ek, dEk = data[data[:, 0]==ne, 2:], data[data[:, 0]==ne, 1], -potential[data[:, 0]==ne, 1:]
+index = np.arange(0, dens_X.shape[0], 1, 'int')
+np.random.shuffle(index)
 
-train_single = train_data[train_data[:, 0]==1]
+train_X, train_y, train_dy = dens_X[index[:250]], Ek[index[:250]], dEk[index[:250]]
+test_X, test_y, test_dy = dens_X[index[250:]], Ek[index[250:]], dEk[index[250:]]
 
-train_X, train_y = train_single[:200, 2:], train_single[:200, 1]
-labels = train_single[:200, 0]
-skr = StratifiedKFold(5, True, 7)
+gamma = np.logspace(-5, -1, 50)
+lambda_ = np.logspace(-14, -5, 50)
+gg, ll = np.meshgrid(gamma, lambda_)
+Parameters = np.c_[gg.reshape((-1, 1)), ll.reshape((-1, 1))]
+Error = []
+for g, l in Parameters:
+    workflow = Workflow(4, g, l, rbfKernel, rbfKernel_gd, KernelRidge)
+    sp = n_split(5, 250, random_state=6567)
+    cv = Cross_validation(sp, workflow)
+    avgerr = cv.run(train_X, train_y[:, np.newaxis], train_dy)
+    Error.append(avgerr)
+Error_surf = np.array(Error).reshape(gg.shape)
 
-# plot coef contour
-n_s, n_l = 50, 20
-Sigma = np.logspace(-2, 3, n_s)
-Lambda = np.logspace(-16, -4, n_l)
-xx, yy = np.meshgrid(Sigma, Lambda)
-XY = np.c_[xx.reshape((-1, 1)), yy.reshape((-1, 1))]
-Z = None
+with open('error_surf', 'wb') as f2:
+    pickle.dump(Error_surf, f2)
 
-comm = MPI.COMM_WORLD
-n_cpu = comm.Get_size()
-ID = comm.Get_rank()
-Elements = len(XY)//n_cpu
-part_XY = XY[ID*Elements:(ID+1)*Elements]
-part_Z = np.zeros(Elements)
+x_min, y_min = Error_surf.argmin()//50, Error_surf.argmin()%50
+print(gg[x_min, y_min], ll[x_min, y_min])
 
-for i, (sigma, lambda_) in enumerate(part_XY):
-    gamma = 1.0/(2*sigma**2)
-    kernel = rbfKernel(gamma)
-    model = KernelRidge(kernel, lambda_)
-    sp = skr.split(train_X, labels)
-    CV = Cross_validation(sp, model, meanSquareError)
-    avg_err = CV.run(train_X, train_y[:, np.newaxis])
-    part_Z[i] = avg_err
-
-if ID == 0:
-    Z = np.zeros(n_s*n_l)
-
-comm.Gather(part_Z, Z, 0)
-
-if ID == 0:
-    surf_data = np.c_[XY, Z.reshape((-1, 1))]
-    with open('error_surf', 'wb') as f:
-        pickle.dump(surf_data, f)
-
+import matplotlib.pyplot as plt
+plt.contourf(gg, ll, np.log(Error_surf), 50)
+plt.xlabel(r'$\gamma$')
+plt.ylabel(r'$\lambda$')
+plt.plot(gg[x_min, y_min], ll[x_min, y_min], 'ko')
+plt.colorbar()
+plt.semilogx()
+plt.semilogy()
+plt.show()
