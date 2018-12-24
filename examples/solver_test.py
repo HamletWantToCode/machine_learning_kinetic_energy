@@ -9,7 +9,7 @@ def V_gen(nbasis, V0):
     np.fill_diagonal(hamilton_mat[1:, :-1], V0*(-0.25))
     Vq = np.zeros(nbasis, dtype=np.complex64)
     Vq[1] = -0.25*V0
-    return hamilton_mat, Vq 
+    return hamilton_mat, Vq
 
 nk = 100
 nbasis = 10
@@ -20,8 +20,6 @@ T, mu, dens_q = solver(nk, nbasis, dmu, hamilton_mat)
 
 print(dens_q[0])
 X = np.linspace(0, 1, 100)
-# dens_x = np.fft.irfft(dens_q, 100)*100
-# X = np.r_[np.linspace(0, 0.5, 51), np.linspace(-0.5, 0, 49)] 
 dens_x = irfft(dens_q, 100)
 
 # print(delta_En_k)
