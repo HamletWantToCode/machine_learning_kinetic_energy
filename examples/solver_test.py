@@ -15,8 +15,8 @@ nk = 100
 nbasis = 10
 V0 = 100
 hamilton_mat, Vq = V_gen(nbasis, V0)
-dmu = 10
-T, mu, dens_q = solver(nk, nbasis, dmu, hamilton_mat)
+mu = 10
+T, mu, dens_q = solver(nk, nbasis, mu, hamilton_mat)
 
 print(dens_q[0])
 X = np.linspace(0, 1, 100)

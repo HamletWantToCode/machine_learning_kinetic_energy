@@ -1,4 +1,4 @@
-import numpy as np 
+import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 from matplotlib.ticker import *
@@ -69,10 +69,9 @@ ax_corr.set_ylabel('correlation coefficient')
 ## range
 fig4 = plt.figure(4)
 gds = ImageGrid(fig4, 111, nrows_ncols=(3, 3), share_all=True)
-n_plot = 0
-for i in range(3):
-    for j in range(4, 7):
-        gds[n_plot].scatter(dens_Xt[:, i], dens_Xt[:, j], c='b')
-        n_plot += 1
+for i in range(9):
+    gds[i].plot(dens_Xt[:, i], Ek, 'bo')
+
+
 plt.show()
 
