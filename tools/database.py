@@ -7,7 +7,7 @@ from MLEK.main.utils import potential_gen
 from MLEK.main.solver import solver
 
 NSAMPLES = 1000
-MAX_Q = 10
+MAX_Q = 5
 V0 = 10
 MU = 5
 NK = 100

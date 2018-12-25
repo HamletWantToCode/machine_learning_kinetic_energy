@@ -68,11 +68,11 @@ ax_corr.set_ylabel('correlation coefficient')
 
 ## range
 fig4 = plt.figure(4)
-gds = ImageGrid(fig4, 111, nrows_ncols=(3, 3), share_all=True)
-n_plot = 0
-for i in range(3):
-    for j in range(4, 7):
-        gds[n_plot].scatter(dens_Xt[:, i], dens_Xt[:, j], c='b')
-        n_plot += 1
+ax_range = fig4.gca()
+color = ['b', 'g', 'r', 'y', 'm', 'c']
+for i in range(6):
+    ax_range.plot(dens_Xt[:, i], np.ones(n)*(i+0.5), color[i], marker='o')
+ax_range.yaxis.set_major_formatter(NullFormatter())
+ax_range.set_xlabel('scale')
 plt.show()
 
