@@ -18,11 +18,12 @@ dens_X, Ek, Vx = np.fft.irfft(data[:, 1:], 100, axis=1)*100, data[:, 0].real, np
 index = np.arange(0, n, 1, 'int')
 np.random.shuffle(index)
 train_X, train_y, train_dy = dens_X[index[:500]], Ek[index[:500]], -Vx[index[:500]]
-test_X, test_y, test_dy = dens_X[index[500:]], Ek[index[500:]], -Vx[index[500:]]
+test_X, test_y, test_dy = dens_X[index[1000:]], Ek[index[1000:]], -Vx[index[1000:]]
 
-gamma, lambda_ = 0.002811768697974228, 1.8420699693267164e-06
+gamma = 0.1
+lambda_ = 4.941713361323838e-09
 
-workflow = Workflow(n_components=2, gamma=gamma, lambda_=lambda_, kernel=rbfKernel, kernel_gd=rbfKernel_gd, model=KernelRidge)
+workflow = Workflow(n_components=1, gamma=gamma, lambda_=lambda_, kernel=rbfKernel, kernel_gd=rbfKernel_gd, model=KernelRidge)
 workflow.fit(train_X, train_y[:, np.newaxis])
 pred_y, pred_dyt = workflow.predict(test_X)
 test_dyt = test_dy @ workflow.tr_mat_
@@ -33,10 +34,12 @@ project_pred_dy = np.sum(pred_dyt[:, :, np.newaxis]*workflow.tr_mat_.T, axis=1)
 err_dy = np.mean((pred_dyt - test_dyt)**2, axis=1)
 err_y = (pred_y - test_y)**2
 
+index = err_dy.argmax()
+
 X = np.linspace(0, 1, 100)
 fig, (ax1, ax2) = plt.subplots(1, 2)
-ax1.plot(np.arange(0, 500, 1), err_y, 'g')
-ax1.plot(np.arange(0, 500, 1), err_dy, 'b')
+ax1.plot(np.arange(0, 1000, 1), err_y, 'b')
+ax1.plot(np.arange(0, 1000, 1), err_dy, 'g')
 ax1.semilogy()
 
 ax2.plot(test_y, pred_y, 'bo')
@@ -44,13 +47,13 @@ ax2.plot(test_y, test_y, 'r')
 plt.show()
 
 
-# gamma = np.logspace(-5, -1, 50)
+# gamma = np.logspace(-8, -1, 50)
 # lambda_ = np.logspace(-14, -5, 50)
 # gg, ll = np.meshgrid(gamma, lambda_)
 # Parameters = np.c_[gg.reshape((-1,1)), ll.reshape((-1,1))]
 # Error = []
 # for g, l in Parameters:
-#     workflow = Workflow(n_components=2, gamma=g, lambda_=l, kernel=rbfKernel, kernel_gd=rbfKernel_gd, model=KernelRidge)
+#     workflow = Workflow(n_components=1, gamma=g, lambda_=l, kernel=rbfKernel, kernel_gd=rbfKernel_gd, model=KernelRidge)
 #     sp = n_split(5, 500, random_state=6567)
 #     cv = Cross_validation(sp, workflow)
 #     avgerr = cv.run(train_X, train_y[:, np.newaxis], train_dy)

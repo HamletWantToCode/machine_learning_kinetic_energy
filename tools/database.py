@@ -6,11 +6,11 @@ import pickle
 from MLEK.main.utils import simple_potential_gen
 from MLEK.main.solver import solver
 
-NSAMPLES = 100
+NSAMPLES = 2000
 # MAX_Q = 10
 LOW_V0 = 5
 HIGH_V0 = 50
-MU = 10
+MU = 5
 NK = 100
 NBASIS = 20
 
