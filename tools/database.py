@@ -3,14 +3,14 @@
 import numpy as np
 from mpi4py import MPI
 import pickle
-from MLEK.main.utils import potential_gen
+from MLEK.main.utils import simple_potential_gen
 from MLEK.main.solver import solver
 
-NSAMPLES = 1000
-# MAX_Q = 5
-V0 = 20
-LOW_MU = 5
-HIGH_MU = 20
+NSAMPLES = 100
+# MAX_Q = 10
+LOW_V0 = 5
+HIGH_V0 = 50
+MU = 10
 NK = 100
 NBASIS = 20
 
@@ -22,7 +22,7 @@ ID = comm.Get_rank()
 POTENTIAL_STORAGE = np.zeros((NSAMPLE_PER_PROC, NBASIS), dtype=np.complex64)
 DATA_STORAGE = np.zeros((NSAMPLE_PER_PROC, NBASIS+1), dtype=np.complex64)
 RANDOM_STATE = ID
-param_gen = potential_gen(NBASIS, V0, LOW_MU, HIGH_MU, RANDOM_STATE)
+param_gen = simple_potential_gen(NBASIS, LOW_V0, HIGH_V0, MU, RANDOM_STATE)
 for i in range(NSAMPLE_PER_PROC):
     hamilton_mat, Vq, mu = next(param_gen)
     T, mu, density = solver(NK, NBASIS, mu, hamilton_mat)
