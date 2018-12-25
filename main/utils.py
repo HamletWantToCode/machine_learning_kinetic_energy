@@ -1,5 +1,22 @@
 import numpy as np
 
+def simple_potential_gen(nbasis, low_V0, high_V0, mu, random_state):
+    np.random.seed(random_state)
+    while True:
+        V0 = np.random.uniform(low_V0, high_V0, size=1)
+        Vq = np.zeros(nbasis)
+        Vq[0] = -0.5*V0
+        Vq[1] = -0.25*V0
+        hamilton_mat = np.zeros((nbasis, nbasis), dtype=np.float64) 
+        np.fill_diagonal(hamilton_mat, Vq[0])
+        np.fill_diagonal(hamilton_mat[1:, :-1], Vq[1])
+        nq = np.random.randint(0, 2)
+        if nq:
+            q_index = np.random.randint(2, nbasis, 1, dtype='int')[0]
+            Vq[q_index] = -0.25*V0*np.random.rand()
+            np.fill_diagonal(hamilton_mat[q_index:, :-q_index], Vq[q_index])
+        yield (hamilton_mat, Vq, mu)
+        
 # potential generator
 def potential_gen(nbasis, max_q, V0, mu, random_state):
     np.random.seed(random_state)
