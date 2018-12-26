@@ -1,11 +1,11 @@
-# gradient error 
+# gradient error
 
 import pickle
-import numpy as np 
+import numpy as np
 from statslib.main.workflow import Workflow
 from statslib.main.kernel_ridge import KernelRidge
 from statslib.tools.utils import rbfKernel, rbfKernel_gd
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 from matplotlib.ticker import FixedFormatter
 
@@ -14,13 +14,13 @@ with open('/Users/hongbinren/Documents/program/MLEK/Burke/quantumX1D', 'rb') as 
     data = pickle.load(f)
 with open('/Users/hongbinren/Documents/program/MLEK/Burke/potentialX1D', 'rb') as f1:
     potential = pickle.load(f1)
-ne = 1
+ne = 4
 dens_X, Ek, dEk_X = data[data[:, 0]==ne, 2:], data[data[:, 0]==ne, 1], -potential[data[:, 0]==ne, 1:]
 n = dens_X.shape[0]
 index = np.arange(0, n, 1, 'int')
 np.random.shuffle(index)
-train_X, train_y, train_dy = dens_X[index[:250]], Ek[index[:250]], dEk_X[index[:250]]
-test_X, test_y, test_dy = dens_X[index[250:]], Ek[index[250:]], dEk_X[index[250:]]
+train_X, train_y, train_dy = dens_X[index[:300]], Ek[index[:300]], dEk_X[index[:300]]
+test_X, test_y, test_dy = dens_X[index[300:]], Ek[index[300:]], dEk_X[index[300:]]
 
 gamma, lambda_ = 0.0009102982, 1.09854114e-10
 
@@ -72,6 +72,6 @@ fig3.legend((l1, l2), ('predict', 'test'), 'upper right')
 fig3.text(0.5, 0.04, r"$n'(x)$", ha='center')
 fig3.text(0.04, 0.5, r"$\frac{\delta T}{\delta n'(x)}$", va='center', rotation='vertical')
 plt.show()
-     
+
 
 

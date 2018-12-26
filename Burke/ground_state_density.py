@@ -12,7 +12,7 @@ with open('/Users/hongbinren/Documents/program/MLEK/Burke/quantumX1D', 'rb') as 
     data = pickle.load(f)
 with open('/Users/hongbinren/Documents/program/MLEK/Burke/potentialX1D', 'rb') as f1:
     potential = pickle.load(f1)
-ne = 1
+ne = 4
 dens_X, Ek, dEk = data[data[:, 0]==ne, 2:], data[data[:, 0]==ne, 1], -potential[data[:, 0]==ne, 1:]
 index = np.arange(0, dens_X.shape[0], 1, 'int')
 np.random.shuffle(index)
@@ -37,10 +37,10 @@ model.fit(train_Xt, train_y[:, np.newaxis])
 alpha = model.coef_
 
 #######
-Vxt_example = -test_dyt[216]
-Vx_example = -test_dy[216]
-dens_example = test_X[216]
+Vx_example = -potential[43, 1:]
+dens_example = data[43, 2:]
 mu = 1
+N = 2
 eta = 1e-2
 err = 1e-4
 
@@ -62,13 +62,13 @@ err = 1e-4
 from MLEK.tools.ground_state_density import Ground_state_density
 
 X = np.linspace(0, 1, 502)
-dens_init = train_X[34]
+dens_init = train_X[73]
 # dens_init = np.ones(502, dtype=np.float64)
 plt.plot(X, dens_example, 'r', label='True')
 plt.plot(X, dens_init, 'b', label='initial', alpha=0.6)
 
 density = Ground_state_density(gamma, alpha, train_X, 4)
-dens_optim = density.optimize(dens_init[np.newaxis, :], Vx_example, mu, eta, err)
+dens_optim = density.optimize(dens_init[np.newaxis, :], Vx_example, mu, N, eta, err)
 
 # E0 = energy(dens_init, mu, Vx_example)
 
