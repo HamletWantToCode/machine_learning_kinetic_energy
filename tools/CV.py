@@ -14,16 +14,16 @@ with open('../data_file/quantum', 'rb') as f:
 with open('../data_file/potential', 'rb') as f1:
     Vq = pickle.load(f1)
 n = data.shape[0]
-dens_X, Ek, Vx = np.fft.irfft(data[:, 1:], 100, axis=1)*100, data[:, 0].real, np.fft.irfft(Vq, 100, axis=1)*100
+dens_X, Ek, mu_reduced, Vx = np.fft.irfft(data[:, 1:], 100, axis=1)*100, data[:, 0].real, Vq[:, 0].real, np.fft.irfft(Vq[:, 1:], 100, axis=1)*100
 index = np.arange(0, n, 1, 'int')
 np.random.shuffle(index)
-train_X, train_y, train_dy = dens_X[index[:500]], Ek[index[:500]], -Vx[index[:500]]
-test_X, test_y, test_dy = dens_X[index[1000:]], Ek[index[1000:]], -Vx[index[1000:]]
+train_X, train_y, train_mu, train_dy = dens_X[index[:500]], Ek[index[:500]], mu_reduced[index[:500]], -Vx[index[:500]]
+test_X, test_y, test_mu, test_dy = dens_X[index[500:]], Ek[index[500:]], mu_reduced[index[500:]], -Vx[index[500:]]
 
-gamma = 0.1
-lambda_ = 4.941713361323838e-09
+gamma = 1e-3
+lambda_ = 1e-10
 
-workflow = Workflow(n_components=1, gamma=gamma, lambda_=lambda_, kernel=rbfKernel, kernel_gd=rbfKernel_gd, model=KernelRidge)
+workflow = Workflow(n_components=2, gamma=gamma, lambda_=lambda_, kernel=rbfKernel, kernel_gd=rbfKernel_gd, model=KernelRidge)
 workflow.fit(train_X, train_y[:, np.newaxis])
 pred_y, pred_dyt = workflow.predict(test_X)
 test_dyt = test_dy @ workflow.tr_mat_
@@ -31,16 +31,16 @@ test_dyt = test_dy @ workflow.tr_mat_
 project_test_dy = np.sum(test_dyt[:, :, np.newaxis]*workflow.tr_mat_.T, axis=1)
 project_pred_dy = np.sum(pred_dyt[:, :, np.newaxis]*workflow.tr_mat_.T, axis=1)
 
-err_dy = np.mean((pred_dyt - test_dyt)**2, axis=1)
-err_y = (pred_y - test_y)**2
+pred_mu = np.mean(project_pred_dy - project_test_dy, axis=1)
 
-index = err_dy.argmax()
+err_dy = np.mean((pred_dyt - test_dyt)**2, axis=1)
+ii = err_dy.argmax()
+err_y = (pred_y - test_y)**2
 
 X = np.linspace(0, 1, 100)
 fig, (ax1, ax2) = plt.subplots(1, 2)
-ax1.plot(np.arange(0, 1000, 1), err_y, 'b')
-ax1.plot(np.arange(0, 1000, 1), err_dy, 'g')
-ax1.semilogy()
+ax1.plot(X, project_pred_dy[ii], 'b')
+ax1.plot(X, project_test_dy[ii], 'r')
 
 ax2.plot(test_y, pred_y, 'bo')
 ax2.plot(test_y, test_y, 'r')

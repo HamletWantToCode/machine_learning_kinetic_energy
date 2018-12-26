@@ -9,8 +9,9 @@ def solver(nk, nbasis, mu, hamiton_mat):
     T = 0
     density = np.zeros(nbasis, dtype=np.complex64)
     for k in kpoints:
-        kinetic_term = [0.5*(k+(i-nbasis//2)*2*np.pi)**2 for i in range(nbasis)]
-        np.fill_diagonal(hamiton_mat, kinetic_term)
+        kinetic_term = np.array([0.5*(k+(i-nbasis//2)*2*np.pi)**2 for i in range(nbasis)])
+        diagonal_val = kinetic_term + np.diag(hamiton_mat)
+        np.fill_diagonal(hamiton_mat, diagonal_val)
         En_k, Uq_k = eigh(hamiton_mat, overwrite_a=True, overwrite_b=True)
         # compute mu
         if k == 0:
@@ -30,7 +31,7 @@ def solver(nk, nbasis, mu, hamiton_mat):
             T_k += 0.5*((k+(i-nbasis//2)*2*np.pi)**2)*(density_mat_kspace[i, i]).real
         T += T_k
         density += density_k
-    return T/nk, mu, density/nk
+    return T/nk, density/nk
 
 
 
