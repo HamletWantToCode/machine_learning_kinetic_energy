@@ -5,12 +5,10 @@ def simple_potential_gen(nbasis, low_V0, high_V0, low_mu, high_mu, random_state)
     while True:
         V0 = np.random.uniform(low_V0, high_V0, size=1)
         Vq = np.zeros(nbasis)
-        Vq[0] = -0.5*V0
         Vq[1] = -0.25*V0
         q_index = np.random.randint(2, nbasis, 1, dtype='int')[0]
         Vq[q_index] = -5*np.random.rand()
         hamilton_mat = np.zeros((nbasis, nbasis), dtype=np.float64) 
-        np.fill_diagonal(hamilton_mat, Vq[0])
         np.fill_diagonal(hamilton_mat[1:, :-1], Vq[1])
         np.fill_diagonal(hamilton_mat[q_index:, :-q_index], Vq[q_index])
         mu = np.random.uniform(low_mu, high_mu)
@@ -27,6 +25,7 @@ def potential_gen(nbasis, max_q, low_V0, high_V0, low_mu, high_mu, random_state)
             q_index = np.array([1])
         else:
             q_index = np.append(np.random.choice(NG, size=nq), 1)
+        mu = np.random.uniform(low_mu, high_mu)
         Vq = np.zeros(nbasis, dtype=np.complex64)
         hamilton_mat = np.zeros((nbasis, nbasis), dtype=np.complex64)
         V0 = np.random.uniform(low_V0, high_V0)
@@ -36,7 +35,6 @@ def potential_gen(nbasis, max_q, low_V0, high_V0, low_mu, high_mu, random_state)
             Vq_conj = -V0*r0*(np.cos(theta) - 1j*np.sin(theta))
             Vq[i] = Vq_conj.conjugate()
             np.fill_diagonal(hamilton_mat[i:, :-i], Vq_conj)
-        mu = np.random.uniform(low_mu, high_mu)
         yield (hamilton_mat, Vq, mu)
 
 def irfft(Aq, n_out):

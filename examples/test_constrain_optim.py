@@ -1,28 +1,25 @@
 # constrained optimization
 
-import numpy as np 
-import matplotlib.pyplot as plt  
+import numpy as np
+import matplotlib.pyplot as plt
 
-mu = 1
-eta = 1e-3
+mu = 2
+eta = 1e-2
 err = 1e-4
 
-def line(x):
-    return x - 1
+def line(t):
+    return np.array([np.cos(t), np.sin(t)])
 
 def f_origin(x):
-    return x[0]**2 + x[1]**2
+    return x[0] + x[1]
 
 def f(x, mu):
-    return x[0]**2 + x[1]**2 - mu*(x[0] - x[1] - 1)
+    return x[0] + x[1] - mu*(x[0]**2 + x[1]**2 - 1)
 
 def df(x, mu):
-    return np.array([2*x[0]-mu, 2*x[1]+mu])
+    return np.array([1-2*mu*x[0], 1-2*mu*x[1]])
 
-def df_mu(x, mu):
-    return x[0] - x[1] - 1
-
-x0 = np.array([1, 0])
+x0 = np.array([-1, 0])
 f0 = f(x0, mu)
 for i in range(1000):
     gd = df(x0, mu)
@@ -40,10 +37,11 @@ X = Y = np.linspace(-1, 1, 20)
 xx, yy = np.meshgrid(X, Y)
 Params = np.c_[xx.reshape((-1, 1)), yy.reshape((-1, 1))]
 zz = np.array([f_origin(xy) for xy in Params]).reshape(xx.shape)
-y = line(X)
+# theta = np.linspace(0, 2*np.pi, 30)
+
 plt.contourf(xx, yy, zz, 30)
 plt.plot(x0[0], x0[1], 'ko')
-plt.plot(X, y, 'r')
+# plt.plot(X, y, 'r')
 plt.ylim([-1, 1])
 plt.show()
 

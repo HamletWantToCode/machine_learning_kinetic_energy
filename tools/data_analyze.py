@@ -1,4 +1,4 @@
-import numpy as np 
+import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 from matplotlib.ticker import *
@@ -68,11 +68,13 @@ ax_corr.set_ylabel('correlation coefficient')
 
 ## range
 fig4 = plt.figure(4)
+<<<<<<< HEAD
 ax_range = fig4.gca()
 color = ['b', 'g', 'r', 'y', 'm', 'c']
 for i in range(6):
     ax_range.plot(dens_Xt[:, i], np.ones(n)*(i+0.5), color[i], marker='o')
 ax_range.yaxis.set_major_formatter(NullFormatter())
 ax_range.set_xlabel('scale')
+
 plt.show()
 

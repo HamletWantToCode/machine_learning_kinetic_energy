@@ -1,16 +1,16 @@
 # ground state density
 
-import numpy as np 
-import pickle 
+import numpy as np
+import pickle
 from statslib.main.kernel_ridge import KernelRidge
 from statslib.tools.utils import rbfKernel, rbfKernel_gd
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 
 np.random.seed(83223)
 
-with open('/Users/hongbinren/Documents/program/MLEK/Burke/quantumX1D', 'rb') as f:
+with open('quantumX1D', 'rb') as f:
     data = pickle.load(f)
-with open('/Users/hongbinren/Documents/program/MLEK/Burke/potentialX1D', 'rb') as f1:
+with open('potentialX1D', 'rb') as f1:
     potential = pickle.load(f1)
 ne = 1
 dens_X, Ek, dEk = data[data[:, 0]==ne, 2:], data[data[:, 0]==ne, 1], -potential[data[:, 0]==ne, 1:]
@@ -51,13 +51,15 @@ err = 1e-4
 #     lag_m = mu*(np.sum(dens)*(1.0/501) - 1)
 #     return Ek + V - lag_m
 
-# def energy_gd(dens, mu, Vxt):
+# def energy_gd(coef, Vxt):
+#     dens, mu = coef[:-1], coef[-1]
 #     dens_t = (dens - mean_X) @ trans_mat
 #     dEk = 501*(kernel_gd(dens_t[np.newaxis, :], train_Xt) @ alpha)
 #     dV = Vxt
 #     dlag_m = mu*np.ones(502) @ trans_mat
 #     project_gd = (dEk + dV - dlag_m) @ trans_mat.T
-#     return project_gd
+#     gd_on_mu = (np.sum(dens)*(1./501) - ne)
+#     return np.append(project_gd, gd_on_mu)
 
 from MLEK.tools.ground_state_density import Ground_state_density
 
@@ -81,6 +83,7 @@ dens_optim = density.optimize(dens_init[np.newaxis, :], Vx_example, mu, eta, err
 #         print('convergence reached after %d of steps' %(i))
 #         break
 #     E0 = E1
+
 
 # X = np.linspace(0, 1, 502)
 # plt.plot(X, dens_example, 'r')
