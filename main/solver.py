@@ -8,8 +8,8 @@ def solver(nk, nbasis, mu, hamiton_mat):
     # build and solve eigenvalue problem
     T = 0
     density = np.zeros(nbasis, dtype=np.complex64)
-    for k in kpoints:
-        kinetic_term = [0.5*(k+(i-nbasis//2)*2*np.pi)**2 for i in range(nbasis)]
+    for ki, k in enumerate(kpoints):
+        kinetic_term = np.array([0.5*(k+(i-nbasis//2)*2*np.pi)**2 for i in range(nbasis)])
         np.fill_diagonal(hamiton_mat, kinetic_term)
         En_k, Uq_k = eigh(hamiton_mat, overwrite_a=True, overwrite_b=True)
         # compute mu
@@ -21,6 +21,8 @@ def solver(nk, nbasis, mu, hamiton_mat):
         for i in range(nbasis):
             if En_k[i] <= mu + b:
                 num_mat_eigspace[i, i] = 1
+            else:
+                break
         density_mat_kspace = Uq_k @ (num_mat_eigspace @ (Uq_k.T).conj())
 
         density_k = np.zeros(nbasis, dtype=np.complex64)

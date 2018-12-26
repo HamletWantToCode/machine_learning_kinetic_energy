@@ -18,16 +18,18 @@ def simple_potential_gen(nbasis, low_V0, high_V0, mu, random_state):
         yield (hamilton_mat, Vq, mu)
         
 # potential generator
-def potential_gen(nbasis, max_q, V0, mu, random_state):
+def potential_gen(nbasis, V0, low_mu, high_mu, random_state):
     np.random.seed(random_state)
-    assert max_q > 2
-    NG = np.arange(2, max_q, 1, 'int')
+    q_index = np.array([1, 2, 3])
+    # assert max_q > 2
+    # NG = np.arange(2, max_q, 1, 'int')
     while True:
-        nq = np.random.randint(0, max_q-2)      # nq is number of non-zero k components other than 0 and 1 component
-        if nq == 0:
-            q_index = np.array([1])
-        else:
-            q_index = np.append(np.random.choice(NG, size=nq), 1)
+        # nq = np.random.randint(0, max_q-2)      # nq is number of non-zero k components other than 0 and 1 component
+        # if nq == 0:
+        #     q_index = np.array([1])
+        # else:
+        #     q_index = np.append(np.random.choice(NG, size=nq), 1)
+        mu = np.random.uniform(low_mu, high_mu)
         Vq = np.zeros(nbasis, dtype=np.complex64)
         hamilton_mat = np.zeros((nbasis, nbasis), dtype=np.complex64)
         for i in q_index:
