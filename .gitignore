@@ -1,11 +1,10 @@
 # Byte-compiled / optimized / DLL files
+run.sh
 **/__pycache__/
 *.py[cod]
 *$py.class
 **/.ipynb_checkpoints/
 **/out
-*.sh
-*.pbs
 data_file/
 .vscode/
 **/old/

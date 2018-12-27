@@ -14,11 +14,11 @@ class Ground_state_density(object):
         self.tr_mat_ = U[:, :n_cmp]
         self.Xt_fit_ = (train_X - mean_x) @ U[:, :n_cmp]
 
-    def energy(self, dens, Vx, mu):
+    def energy(self, dens, Vx, mu, N):
         _, D_ = dens.shape
         dens_t = (dens - self.mean_) @ self.tr_mat_
         Ek = (self.kernel(dens_t, self.Xt_fit_) @ self.alpha_)[0]
-        return Ek + np.sum((Vx - mu)*dens)*(1.0/(D_-1)) + mu 
+        return Ek + np.sum((Vx - mu)*dens)*(1.0/(D_-1)) + mu*N 
 
     def energy_gd(self, dens, Vx, mu):
         N_, D_ = dens.shape
@@ -28,14 +28,14 @@ class Ground_state_density(object):
         project_gd = (dEk + shifted_Vx @ self.tr_mat_) @ self.tr_mat_.T
         return project_gd
 
-    def optimize(self, dens_init, Vx, mu, eta, err, maxiters=1000):
+    def optimize(self, dens_init, Vx, mu, N, eta, err, maxiters=1000):
         assert dens_init.ndim == 2, print('dimension mismatch')
-        E0 = self.energy(dens_init, Vx, mu)
+        E0 = self.energy(dens_init, Vx, mu, N)
         n = 1
         while True:
             gd = self.energy_gd(dens_init, Vx, mu)
             dens = dens_init - eta*gd
-            E1 = self.energy(dens, Vx, mu)
+            E1 = self.energy(dens, Vx, mu, N)
             dens_init = dens
             if abs(E1 - E0)<err:
                 print('converge after %d of iterations !' %(n))

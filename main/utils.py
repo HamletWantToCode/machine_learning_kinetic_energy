@@ -1,19 +1,21 @@
 import numpy as np
 
-def simple_potential_gen(nbasis, low_V0, high_V0, low_mu, high_mu, random_state):
+# simulate Burke's potential with FFT
+def simple_potential_gen(nbasis, low_a, high_a, low_b, high_b, low_c, high_c, mu, random_state):
     np.random.seed(random_state)
+    X = np.linspace(0, 1, nbasis)
+    nq = nbasis//2+1
     while True:
-        V0 = np.random.uniform(low_V0, high_V0, size=1)
-        Vq = np.zeros(nbasis)
-        Vq[1] = -0.25*V0
-        q_index = np.random.randint(2, nbasis, 1, dtype='int')[0]
-        Vq[q_index] = -0.01*V0
-        hamilton_mat = np.zeros((nbasis, nbasis), dtype=np.float64) 
-        np.fill_diagonal(hamilton_mat[1:, :-1], Vq[1])
-        np.fill_diagonal(hamilton_mat[q_index:, :-q_index], Vq[q_index])
-        mu = np.random.uniform(low_mu, high_mu)
-        yield (hamilton_mat, Vq, mu)
-        
+        a = np.random.uniform(low_a, high_a, 3)
+        b = np.random.uniform(low_b, high_b, 3)
+        c = np.random.uniform(low_c, high_c, 3)
+        Vx = -np.sum(a[:, np.newaxis]*np.exp(-0.5*(X[np.newaxis, :]-b[:, np.newaxis])**2/c[:, np.newaxis]**2), axis=0)
+        Vq = np.fft.rfft(Vx)/nbasis
+        H = np.zeros((nbasis, nbasis), dtype=np.complex128)
+        for i in range(1, nq):
+                np.fill_diagonal(H[i:, :-i], Vq[i].conj())
+        yield (H, Vq, mu)
+
 # potential generator
 def potential_gen(nbasis, max_q, low_V0, high_V0, low_mu, high_mu, random_state):
     np.random.seed(random_state)
