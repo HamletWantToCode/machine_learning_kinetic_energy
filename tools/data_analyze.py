@@ -37,21 +37,13 @@ U, S, _ = np.linalg.svd(Cov)
 dens_Xt = (dens_x - mean_x) @ U
 
 fig2 = plt.figure(2)
-main_rect = [0.1, 0.1, 0.6, 0.6]
-up_rect = [0.1, 0.71, 0.6, 0.2]
-right_rect = [0.71, 0.1, 0.2, 0.6]
-ax_hist_right = fig2.add_axes(right_rect)
-ax_hist_up = fig2.add_axes(up_rect)
-ax_scatter = fig2.add_axes(main_rect)
-ax_scatter.scatter(dens_Xt[:, 0], dens_Xt[:, 1], c='b')
-ax_scatter.set_xlabel('principal #1')
-ax_scatter.set_ylabel('principal #2')
-_, right_bins_edges, _ = ax_hist_right.hist(dens_Xt[:, 1], 20, orientation='horizontal')
-_, up_bins_edges, _ = ax_hist_up.hist(dens_Xt[:, 0], 20)
-r_bin_width = right_bins_edges[1] - right_bins_edges[0]
-u_bin_width = up_bins_edges[1] - up_bins_edges[0]
-ax_hist_right.yaxis.set_major_formatter(NullFormatter())
-ax_hist_up.xaxis.set_major_formatter(NullFormatter())
+gds = ImageGrid(fig2, 111, nrows_ncols=(5, 1), aspect=False) 
+for i in range(5):
+    gds[i].hist(dens_Xt[:, i], 20, density=True, label='principal #%d' %(i))
+    gds[i].yaxis.set_major_formatter(funcfmt)
+    gds[i].legend(loc=1)
+fig2.text(0.5, 0.04, 'range', ha='center')
+fig2.text(0.04, 0.5, 'fraction', va='center', rotation='vertical')
 
 ## correlation
 corr_coef = np.zeros(20)
@@ -65,13 +57,6 @@ ax_corr.plot(np.arange(0, 20, 1), corr_coef, 'bo-')
 ax_corr.xaxis.set_major_locator(MultipleLocator(1.0))
 ax_corr.set_xlabel('dimension')
 ax_corr.set_ylabel('correlation coefficient')
-
-## range
-fig4 = plt.figure(4)
-gds = ImageGrid(fig4, 111, nrows_ncols=(3, 3), share_all=True)
-for i in range(9):
-    gds[i].plot(dens_Xt[:, i], Ek, 'bo')
-
 
 plt.show()
 
