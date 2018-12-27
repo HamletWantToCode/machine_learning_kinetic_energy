@@ -68,7 +68,6 @@ ax_corr.set_ylabel('correlation coefficient')
 
 ## range
 fig4 = plt.figure(4)
-<<<<<<< HEAD
 ax_range = fig4.gca()
 color = ['b', 'g', 'r', 'y', 'm', 'c']
 for i in range(6):

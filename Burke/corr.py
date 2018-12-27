@@ -9,9 +9,9 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 from matplotlib.ticker import NullFormatter, FixedLocator
 
-with open('/Users/hongbinren/Documents/program/MLEK/Burke/quantumX1D', 'rb') as f:
+with open('quantumX1D', 'rb') as f:
     data = pickle.load(f)
-with open('/Users/hongbinren/Documents/program/MLEK/Burke/potentialX1D', 'rb') as f1:
+with open('potentialX1D', 'rb') as f1:
     potential = pickle.load(f1)
 ne = 1
 dens_X, Ek, dEk = data[data[:, 0]==ne, 2:], data[data[:, 0]==ne, 1], -potential[data[:, 0]==ne, 1:]
@@ -40,6 +40,17 @@ ax1.plot(np.arange(0, 20, 1), Corr, 'bo-')
 ax1.set_xlabel('dimension')
 ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 22, 2)))
 ax1.set_ylabel('corrlation coefficient')
+
+# relation with Ek and #
+fig2 = plt.figure(figsize=(6, 6))
+gds = ImageGrid(fig2, 111, nrows_ncols=(2, 2), share_all=True, aspect=False, axes_pad=0.5)
+for i in range(4):
+    gds[i].plot(dens_Xt[:, i], Ek, 'bo')
+fig2.text(0.5, 0.04, 'principal components', ha='center')
+fig2.text(0.04, 0.5, 'Ek', va='center', rotation='vertical')
+plt.show()
+
+
 
 # machine learning
 # np.random.seed(83223)

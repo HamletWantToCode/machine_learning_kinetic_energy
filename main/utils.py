@@ -7,7 +7,7 @@ def simple_potential_gen(nbasis, low_V0, high_V0, low_mu, high_mu, random_state)
         Vq = np.zeros(nbasis)
         Vq[1] = -0.25*V0
         q_index = np.random.randint(2, nbasis, 1, dtype='int')[0]
-        Vq[q_index] = -5*np.random.rand()
+        Vq[q_index] = -0.01*V0
         hamilton_mat = np.zeros((nbasis, nbasis), dtype=np.float64) 
         np.fill_diagonal(hamilton_mat[1:, :-1], Vq[1])
         np.fill_diagonal(hamilton_mat[q_index:, :-q_index], Vq[q_index])

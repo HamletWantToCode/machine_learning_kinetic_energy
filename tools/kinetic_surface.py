@@ -8,26 +8,26 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 
 np.random.seed(3239)
-with open('quantumX1D', 'rb') as f:
+with open('../data_file/quantum', 'rb') as f:
     data = pickle.load(f)
-ne = 2
-dens_X, Ek = data[data[:, 0]==ne, 2:], data[data[:, 0]==ne, 1]
+dens_X, Ek = np.fft.irfft(data[:, 1:], 100, axis=1)*100, data[:, 0].real
 n = dens_X.shape[0]
 index = np.arange(0, n, 1, 'int')
 np.random.shuffle(index)
-train_X, train_y = dens_X[index[:250]], Ek[index[:250]]
+train_X, train_y = dens_X[index[:1000]], Ek[index[:1000]]
 mean_X = np.mean(train_X, axis=0)
 n_train = train_X.shape[0]
 Cov = (train_X - mean_X).T @ (train_X - mean_X) / n_train
 U, _, _ = np.linalg.svd(Cov)
-train_Xt = (train_X - mean_X) @ U[:, :2]
+trans_mat = np.c_[U[:, 2, np.newaxis], U[:, 4, np.newaxis]]
+train_Xt = (train_X - mean_X) @ trans_mat
 
-gamma, lambda_ = 0.0009102982, 1.09854114e-10
+gamma, lambda_ = 1e-4, 1e-10
 kernel = rbfKernel(gamma)
 model = KernelRidge(kernel, lambda_)
 model.fit(train_Xt, train_y[:, np.newaxis])
 
-dens_Xt = (dens_X - mean_X) @ U[:, :2]
+dens_Xt = (dens_X - mean_X) @ trans_mat
 x_max, y_max = np.amax(dens_Xt, axis=0)
 x_min, y_min = np.amin(dens_Xt, axis=0)
 X = np.linspace(x_min, x_max, 50)

@@ -10,9 +10,9 @@ from mpl_toolkits.axes_grid1 import ImageGrid
 from matplotlib.ticker import FixedFormatter
 
 np.random.seed(3239)
-with open('/Users/hongbinren/Documents/program/MLEK/Burke/quantumX1D', 'rb') as f:
+with open('quantumX1D', 'rb') as f:
     data = pickle.load(f)
-with open('/Users/hongbinren/Documents/program/MLEK/Burke/potentialX1D', 'rb') as f1:
+with open('potentialX1D', 'rb') as f1:
     potential = pickle.load(f1)
 ne = 1
 dens_X, Ek, dEk_X = data[data[:, 0]==ne, 2:], data[data[:, 0]==ne, 1], -potential[data[:, 0]==ne, 1:]

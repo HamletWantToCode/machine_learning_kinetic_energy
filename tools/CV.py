@@ -17,13 +17,13 @@ n = data.shape[0]
 dens_X, Ek, mu_reduced, Vx = np.fft.irfft(data[:, 1:], 100, axis=1)*100, data[:, 0].real, Vq[:, 0].real, np.fft.irfft(Vq[:, 1:], 100, axis=1)*100
 index = np.arange(0, n, 1, 'int')
 np.random.shuffle(index)
-train_X, train_y, train_mu, train_dy = dens_X[index[:500]], Ek[index[:500]], mu_reduced[index[:500]], -Vx[index[:500]]
-test_X, test_y, test_mu, test_dy = dens_X[index[500:]], Ek[index[500:]], mu_reduced[index[500:]], -Vx[index[500:]]
+train_X, train_y, train_mu, train_dy = dens_X[index[:1000]], Ek[index[:1000]], mu_reduced[index[:1000]], -Vx[index[:1000]]
+test_X, test_y, test_mu, test_dy = dens_X[index[1000:]], Ek[index[1000:]], mu_reduced[index[1000:]], -Vx[index[1000:]]
 
-gamma = 1e-3
+gamma = 1e-4
 lambda_ = 1e-10
 
-workflow = Workflow(n_components=2, gamma=gamma, lambda_=lambda_, kernel=rbfKernel, kernel_gd=rbfKernel_gd, model=KernelRidge)
+workflow = Workflow(n_components=[0, 4], gamma=gamma, lambda_=lambda_, kernel=rbfKernel, kernel_gd=rbfKernel_gd, model=KernelRidge)
 workflow.fit(train_X, train_y[:, np.newaxis])
 pred_y, pred_dyt = workflow.predict(test_X)
 test_dyt = test_dy @ workflow.tr_mat_
