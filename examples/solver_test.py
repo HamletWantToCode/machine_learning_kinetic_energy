@@ -13,7 +13,7 @@ def V_gen(nbasis, V0):
 
 nk = 100
 nbasis = 10
-V0 = 100
+V0 = 10
 hamilton_mat, Vq = V_gen(nbasis, V0)
 mu = 10
 T, mu, dens_q = solver(nk, nbasis, mu, hamilton_mat)
