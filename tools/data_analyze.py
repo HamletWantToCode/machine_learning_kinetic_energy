@@ -2,12 +2,12 @@ import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 from matplotlib.ticker import *
-from mpl_toolkits.axes_grid1 import ImageGrid
+import matplotlib.gridspec as gridspec
 
 with open('../data_file/quantum', 'rb') as f:
     data = pickle.load(f)
 dens_q, Ek = data[:, 1:], data[:, 0].real
-dens_x = np.fft.irfft(dens_q, 100, axis=1)*100
+dens_x = np.fft.irfft(dens_q, 500, axis=1)*500
 n = dens_x.shape[0]
 
 # EU distance
@@ -36,14 +36,24 @@ Cov = (dens_x - mean_x).T @ (dens_x - mean_x) / n
 U, S, _ = np.linalg.svd(Cov)
 dens_Xt = (dens_x - mean_x) @ U
 
+## display the range of first 5 dimension
 fig2 = plt.figure(2)
-gds = ImageGrid(fig2, 111, nrows_ncols=(5, 1), aspect=False) 
+gds = gridspec.GridSpec(5, 1)
 for i in range(5):
-    gds[i].hist(dens_Xt[:, i], 20, density=True, label='principal #%d' %(i))
-    gds[i].yaxis.set_major_formatter(funcfmt)
-    gds[i].legend(loc=1)
+    ax = fig2.add_subplot(gds[i])
+    ax.hist(dens_Xt[:, i], 20, density=True, label='principal #%d' %(i))
+    ax.yaxis.set_major_formatter(funcfmt)
+    ax.xaxis.set_major_formatter(NullFormatter())
+    ax.legend(loc=1)
 fig2.text(0.5, 0.04, 'range', ha='center')
 fig2.text(0.04, 0.5, 'fraction', va='center', rotation='vertical')
+
+## 2D display of data distribution
+fig4 = plt.figure(4)
+ax = fig4.gca()
+ax.scatter(dens_Xt[:, 0], dens_Xt[:, 1], c='b')
+ax.set_xlabel('principal #1')
+ax.set_ylabel('principal #2')
 
 ## correlation
 corr_coef = np.zeros(20)
