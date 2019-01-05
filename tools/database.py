@@ -22,7 +22,7 @@ SIZE = comm.Get_size()
 NSAMPLE_PER_PROC = NSAMPLES // SIZE
 ID = comm.Get_rank()
 
-POTENTIAL_STORAGE = np.zeros((NSAMPLE_PER_PROC, NBASIS//2+2), dtype=np.complex64)
+POTENTIAL_STORAGE = np.zeros((NSAMPLE_PER_PROC, NBASIS+1), dtype=np.complex64)
 DATA_STORAGE = np.zeros((NSAMPLE_PER_PROC, NBASIS+1), dtype=np.complex64)
 RANDOM_STATE = ID
 param_gen = simple_potential_gen(NBASIS, LOW_A, HIGH_A, LOW_B, HIGH_B, LOW_C, HIGH_C, MU, RANDOM_STATE)
@@ -36,7 +36,7 @@ DATA = None
 POTENTIAL = None
 if ID == 0:
     DATA = np.zeros((NSAMPLES, NBASIS+1), dtype=np.complex64)
-    POTENTIAL = np.zeros((NSAMPLES, NBASIS//2+2), dtype=np.complex64)
+    POTENTIAL = np.zeros((NSAMPLES, NBASIS+1), dtype=np.complex64)
 
 comm.Gather(DATA_STORAGE, DATA, root=0)
 comm.Gather(POTENTIAL_STORAGE, POTENTIAL, root=0)
