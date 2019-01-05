@@ -3,16 +3,16 @@ import numpy as np
 # simulate Burke's potential with FFT
 def simple_potential_gen(nbasis, low_a, high_a, low_b, high_b, low_c, high_c, mu, random_state):
     np.random.seed(random_state)
-    X = np.linspace(0, 1, nbasis)
-    nq = nbasis//2+1
+    nq = (nbasis-1)*2
+    X = np.linspace(0, 1, nq)
     while True:
         a = np.random.uniform(low_a, high_a, 3)
         b = np.random.uniform(low_b, high_b, 3)
         c = np.random.uniform(low_c, high_c, 3)
         Vx = -np.sum(a[:, np.newaxis]*np.exp(-0.5*(X[np.newaxis, :]-b[:, np.newaxis])**2/c[:, np.newaxis]**2), axis=0)
         Vq = np.fft.rfft(Vx)/nbasis
-        H = np.zeros((nbasis, nbasis), dtype=np.complex128)
-        for i in range(1, nq):
+        H = np.zeros((nbasis, nbasis), dtype=np.complex64)
+        for i in range(1, nbasis):
                 np.fill_diagonal(H[i:, :-i], Vq[i].conj())
         yield (H, Vq, mu)
 
