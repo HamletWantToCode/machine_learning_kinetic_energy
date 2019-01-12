@@ -26,12 +26,13 @@ pipe = MyPipe([('reduce_dim', PrincipalComponentAnalysis()), ('regressor', Kerne
 param_grid = [
               {
               'reduce_dim__n_components': [4],
-              'regressor__C': [1.09854114e-10],
-              'regressor__gamma': [0.0009102982]  
+              'regressor__C': [1.09854114e-10, 1e-3],
+              'regressor__gamma': [0.0009102982, 0.1]  
               }
              ]
 grid_search = MyGridSearchCV(pipe, param_grid, cv=5, scoring=neg_mean_squared_error_scorer)
 grid_search.fit(densx_train, Ek_train, dEkx_train)
+print(grid_search.best_params_)
 
 best_estimator = grid_search.best_estimator_
 
@@ -40,6 +41,6 @@ with open('../example_demo/demo_best_estimator', 'wb') as f2:
 with open('../example_demo/demo_train_data', 'wb') as f3:
     train_data = np.c_[Ek_train.reshape((-1, 1)), densx_train, dEkx_train] 
     pickle.dump(train_data, f3)
-with open('../example_demo/demo_test_data', 'wb') as f4
+with open('../example_demo/demo_test_data', 'wb') as f4:
     test_data = np.c_[Ek_test.reshape((-1, 1)), densx_test, dEkx_test]
     pickle.dump(test_data, f4)

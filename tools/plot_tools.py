@@ -62,31 +62,29 @@ def plot_real_space_density(dens_x, out_dir='../example_demo'):
     ax.set_ylabel(r'$\rho(x)$')
     plt.savefig('/'.join([out_dir, 'density.png']))
 
-def plot_prediction(Ek_true, Ek_pred, dEkx_true, dEkx_pred, densx_true, densx_pred, densx_init, out_dir='../example_demo'):
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
+def plot_prediction(Ek_true, Ek_pred, densx_true, densx_pred, densx_init, out_dir='../example_demo'):
+    fig = plt.figure(figsize=(9, 4))
+    gd = GridSpec(1, 2, figure=fig)
     ## Ek plot
+    ax1 = fig.add_subplot(gd[0])
     mse_Ek = np.mean((Ek_pred-Ek_true)**2)
     ax1.plot(Ek_true, Ek_pred, 'bo', label='predict')
     ax1.plot(Ek_true, Ek_true, 'r', label='true')
     ax1.set_xlabel('Ek test')
     ax1.set_ylabel('Ek predict')
+    pos_x, pos_y = 0.65*Ek_true.max() + 0.35*Ek_true.min(), 0.85*Ek_pred.min() + 0.15*Ek_pred.max()
+    ax1.text(pos_x, pos_y, s='mse=%.2E' %(mse_Ek))
     ax1.legend()
-    
-    ## dEk plot
-    _, n_points = dEkx_pred.shape
-    mse_dEkx = np.mean(np.sum((dEkx_predict - dEkx_test)**2, axis=1))
+    ## density plot
+    n_points = densx_true.shape[0]
     X = np.linspace(0, 1, n_points)
-    
-    ax2.plot(X, dEkx_true[5], 'r', label='true')
-    ax2.plot(X, dEkx_pred[5], 'b--', label='predict', alpha=0.7)
+    ax2 = fig.add_subplot(gd[1])
+    ax2.plot(X, densx_pred, 'b--', label='predict')
+    ax2.plot(X, densx_true, 'r', label='true', alpha=0.7)
+    ax2.plot(X, densx_init, 'g--', label='initial')
     ax2.set_xlabel('x')
-    ax2.set_ylabel(r'$\frac{\delta T}{\delta n(x)}$')
+    ax2.set_ylabel(r'$\rho(x)$')
     ax2.legend()
-
-    ax3.plot(X, densx_pred, 'b--', label='predict', alpha=0.7)
-    ax3.plot(X, densx_true, 'r', label='true')
-    ax3.plot(X, densx_init, 'g--', label='initial', alpha=0.7)
-    ax3.legend()
 
     plt.savefig('/'.join([out_dir, 'predict_results.png']))
 

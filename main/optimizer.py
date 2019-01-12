@@ -3,28 +3,33 @@ from sklearn.utils import check_array
 
 class Minimizer(object):
     def __init__(self, ml_model):
-        self.ml_model = ml_model
+        self.transformer = ml_model.named_steps['reduce_dim']
+        self.estimator = ml_model.named_steps['regressor']
 
-    def energy(self, denst, Vxt, mu, N):
-        Ek = self.ml_model.predict(denst)
-        return Ek + np.sum((Vxt - mu)*denst) + mu*N 
+    def energy(self, dens, V, mu, N):
+        _, n_points = dens.shape
+        denst = self.transformer.transform(dens)
+        Ek = self.estimator.predict(denst)[0]
+        return Ek + np.sum((V[0] - mu)*dens[0])*(1.0/n_points) + mu*N 
 
-    def energy_gd(self, denst, Vxt, mu):
-        dEk = self.ml_model.predict_gradient(denst)
-        return dEk + (Vxt - mu)
+    def energy_gd(self, dens, V, mu):
+        _, n_points = dens.shape
+        denst = self.transformer.transform(dens)
+        dEkt = (n_points-1) * self.estimator.predict_gradient(denst)[0]
+        Vt = self.transformer.transform_gradient(V)[0]
+        project_gd = dEkt + Vt - mu
+        return self.transformer.inverse_transform_gradient(project_gd[np.newaxis, :])[0]
 
-    def run(self, densx_init, Vx, mu, N, eta=0.1, err=1e-3, maxiters=1000):
-        dens_init = check_array(dens_init)
-        denst_init = self.ml_model.transform(dens_init)
-        Vxt = self.ml_model.transform_gradient(Vx)
+    def run(self, dens_init, V, mu, N, eta=1e-2, err=1e-4, maxiters=1000):
+        dens_init, V = check_array(dens_init), check_array(V)
 
-        E0 = self.energy(denst_init, Vxt, mu, N)
+        E0 = self.energy(dens_init, V, mu, N)
         n = 1
         while True:
-            gd = self.energy_gd(denst_init, Vxt, mu)
-            denst = denst_init - eta*gd
-            E1 = self.energy(denst, Vxt, mu, N)
-            denst_init = denst
+            gd = self.energy_gd(dens_init, V, mu)
+            dens = dens_init - eta*gd
+            E1 = self.energy(dens, V, mu, N)
+            dens_init = dens
             if abs(E1 - E0)<err:
                 print('converge after %d of iterations !' %(n))
                 break
@@ -32,5 +37,4 @@ class Minimizer(object):
             n += 1
             if n > maxiters:
                 raise StopIteration('exceed maximum iteration number !')
-        dens_optim = self.ml_model.inverse_transform(denst_init)
-        return dens_optim
+        return dens_init[0]
