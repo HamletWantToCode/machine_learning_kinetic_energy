@@ -32,9 +32,10 @@ param_grid = [
              ]
 grid_search = MyGridSearchCV(pipe, param_grid, cv=5, scoring=neg_mean_squared_error_scorer)
 grid_search.fit(densx_train, Ek_train, dEkx_train)
-print(grid_search.best_params_)
-print('\n')
-print(grid_search.cv_results_)
+print('best parameters:\n', grid_search.best_params_, '\n')
+test_score = grid_search.cv_results_['mean_test_score']
+best_score_index = grid_search.cv_results_['rank_test_score'][0]-1
+print('test score (mse):', -test_score[best_score_index])
 
 best_estimator = grid_search.best_estimator_
 
