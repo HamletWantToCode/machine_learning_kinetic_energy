@@ -1,0 +1,4 @@
+best parameters:
+ {'reduce_dim__n_components': 4, 'regressor__C': 1.09854114e-10, 'regressor__gamma': 0.0009102982} 
+
+test score (mse): 0.0128503629918
