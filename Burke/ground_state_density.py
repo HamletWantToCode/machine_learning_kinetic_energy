@@ -2,47 +2,71 @@
 
 import numpy as np
 import pickle
-from statslib.main.kernel_ridge import KernelRidge
-from statslib.tools.utils import rbfKernel, rbfKernel_gd
-import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
 
-np.random.seed(83223)
+from statslib.main.pipeline import MyPipe
+from statslib.main.grid_search import MyGridSearchCV
+from statslib.main.metric import make_scorer
+# from statslib.main.kernel_ridge import KernelRidge
+from statslib.main.gauss_process import GaussProcess
+from statslib.main.pca import PrincipalComponentAnalysis
+from statslib.main.utils import rbf_kernel, rbf_kernel_gradient, rbf_kernel_hessan
 
-with open('quantumX1D', 'rb') as f:
+R = np.random.RandomState(328392)
+
+with open('/Users/hongbinren/Documents/program/MLEK/Burke/quantumX1D', 'rb') as f:
     data = pickle.load(f)
-with open('potentialX1D', 'rb') as f1:
+with open('/Users/hongbinren/Documents/program/MLEK/Burke/potentialX1D', 'rb') as f1:
     potential = pickle.load(f1)
-ne = 4
-dens_X, Ek, dEk = data[data[:, 0]==ne, 2:], data[data[:, 0]==ne, 1], -potential[data[:, 0]==ne, 1:]
-index = np.arange(0, dens_X.shape[0], 1, 'int')
-np.random.shuffle(index)
+ne = 1
+densx, Ek, dEk = data[data[:, 0]==ne, 2:], data[data[:, 0]==ne, 1], -potential[data[:, 0]==ne, 1:]
+densx_train, densx_test, Ek_train, Ek_test, dEk_train, dEk_test = train_test_split(densx, Ek, dEk, test_size=0.4, random_state=R)
 
-train_X, train_y, train_dy = dens_X[index[:250]], Ek[index[:250]], dEk[index[:250]]
-test_X, test_y, test_dy = dens_X[index[250:]], Ek[index[250:]], dEk[index[250:]]
-n_train = train_X.shape[0]
-mean_X = np.mean(train_X, axis=0)
-Cov = (train_X - mean_X).T @ (train_X - mean_X) / n_train
-U, _, _ = np.linalg.svd(Cov)
-trans_mat = U[:, :4]
-train_Xt, test_Xt = (train_X - mean_X) @ trans_mat, (test_X - mean_X) @ trans_mat
-train_dyt, test_dyt = train_dy @ trans_mat, test_dy @ trans_mat
-project_test_dy = np.sum(test_dyt[:, :, np.newaxis]*trans_mat.T, axis=1)
-# project_test_X = np.sum(test_Xt[:, :, np.newaxis]*trans_mat.T, axis=1)
+neg_mean_squared_error_scorer = make_scorer(mean_squared_error)
+pipe = MyPipe([('reduce_dim', PrincipalComponentAnalysis()), ('regressor', GaussProcess(kernel=rbf_kernel, kernel_gd=rbf_kernel_gradient, gradient_on=True, kernel_hess=rbf_kernel_hessan))])
+param_grid = [
+              {
+              'reduce_dim__n_components': [4],
+              'regressor__sigma': [1.09854114e-4],
+              'regressor__gamma': [0.0009102982]  
+              }
+             ]
+grid_search = MyGridSearchCV(pipe, param_grid, cv=5, scoring=neg_mean_squared_error_scorer)
+grid_search.fit(densx_train, Ek_train, dEk_train)
+print(grid_search.cv_results_)
 
-gamma, lambda_ = 0.0009102982, 1.09854114e-10
-kernel = rbfKernel(gamma)
-kernel_gd = rbfKernel_gd(gamma)
-model = KernelRidge(kernel, lambda_)
-model.fit(train_Xt, train_y[:, np.newaxis])
-alpha = model.coef_
+Ek_predict = grid_search.predict(densx_test)
+project_dEk_predict = grid_search.predict_gradient(densx_test)
+
+tr_mat = grid_search.best_estimator_.named_steps['reduce_dim'].tr_mat_
+project_dEk_test = dEk_test @ tr_mat @ tr_mat.T
+
+import matplotlib.pyplot as plt 
+X = np.linspace(0, 1, 502)
+fig, (ax1, ax2) = plt.subplots(1, 2)
+ax1.plot(Ek_test, Ek_test, 'r')
+ax1.plot(Ek_test, Ek_predict, 'bo')
+
+ax2.plot(X, project_dEk_test[53], 'r')
+ax2.plot(X, project_dEk_predict[53], 'b--')
+plt.show()
+
+# gamma, lambda_ = 0.0009102982, 1.09854114e-10
+# pipe.fit(densx_train, Ek_train)
+# Ek_predict = pipe.predict(densx_test)
+
+# U = pipe.named_steps['reduce_dim'].tr_mat_
+# project_dEk_test = dEk_test @ U @ U.T 
+# project_dEk_predict = 501*pipe.predict_gradient(densx_test) @ U.T
 
 #######
-Vx_example = -potential[43, 1:]
-dens_example = data[43, 2:]
-mu = 1
-N = 2
-eta = 1e-2
-err = 1e-4
+# Vx_example = -potential[43, 1:]
+# dens_example = data[43, 2:]
+# mu = 1
+# N = 2
+# eta = 1e-2
+# err = 1e-4
 
 # def energy(dens, mu, Vx):
 #     dens_t = (dens - mean_X) @ trans_mat
@@ -61,16 +85,16 @@ err = 1e-4
 #     gd_on_mu = (np.sum(dens)*(1./501) - ne)
 #     return np.append(project_gd, gd_on_mu)
 
-from MLEK.tools.ground_state_density import Ground_state_density
+# from MLEK.tools.ground_state_density import Ground_state_density
 
-X = np.linspace(0, 1, 502)
-dens_init = train_X[73]
-# dens_init = np.ones(502, dtype=np.float64)
-plt.plot(X, dens_example, 'r', label='True')
-plt.plot(X, dens_init, 'b', label='initial', alpha=0.6)
+# X = np.linspace(0, 1, 502)
+# dens_init = train_X[73]
+# # dens_init = np.ones(502, dtype=np.float64)
+# plt.plot(X, dens_example, 'r', label='True')
+# plt.plot(X, dens_init, 'b', label='initial', alpha=0.6)
 
-density = Ground_state_density(gamma, alpha, train_X, 4)
-dens_optim = density.optimize(dens_init[np.newaxis, :], Vx_example, mu, N, eta, err)
+# density = Ground_state_density(gamma, alpha, train_X, 4)
+# dens_optim = density.optimize(dens_init[np.newaxis, :], Vx_example, mu, N, eta, err)
 
 # E0 = energy(dens_init, mu, Vx_example)
 
@@ -83,13 +107,13 @@ dens_optim = density.optimize(dens_init[np.newaxis, :], Vx_example, mu, N, eta, 
 #         print('convergence reached after %d of steps' %(i))
 #         break
 #     E0 = E1
-
+# import matplotlib.pyplot as plt
 
 # X = np.linspace(0, 1, 502)
 # plt.plot(X, dens_example, 'r')
-plt.plot(X, dens_optim, 'g--', label='optimized')
+# plt.plot(X, dens_optim, 'g--', label='optimized')
 # plt.plot(X, project_test_X[216], 'm')
-plt.legend()
-plt.xlabel('x')
-plt.ylabel(r'$\rho(x)$')
-plt.show()
+# plt.legend()
+# plt.xlabel('x')
+# plt.ylabel(r'$\rho(x)$')
+# plt.show()
