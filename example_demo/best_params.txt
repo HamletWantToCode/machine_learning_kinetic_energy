@@ -1,1 +1,20 @@
 {'reduce_dim__n_components': 4, 'regressor__C': 1.09854114e-10, 'regressor__gamma': 0.0009102982}
+
+
+{'mean_fit_time': array([ 0.07335873,  0.06271801,  0.05723815,  0.06057305]), 'std_fit_time': array([ 0.03173613,  0.01005724,  0.00244706,  0.00368593]), 'mean_score_time': array([ 0.00377631,  0.00398693,  0.00334272,  0.00390334]), 'std_score_time': array([ 0.00058478,  0.00112535,  0.00019818,  0.000799  ]), 'param_reduce_dim__n_components': masked_array(data = [4 4 4 4],
+             mask = [False False False False],
+       fill_value = ?)
+, 'param_regressor__C': masked_array(data = [1.09854114e-10 1.09854114e-10 0.001 0.001],
+             mask = [False False False False],
+       fill_value = ?)
+, 'param_regressor__gamma': masked_array(data = [0.0009102982 0.1 0.0009102982 0.1],
+             mask = [False False False False],
+       fill_value = ?)
+, 'params': [{'reduce_dim__n_components': 4, 'regressor__C': 1.09854114e-10, 'regressor__gamma': 0.0009102982}, {'reduce_dim__n_components': 4, 'regressor__C': 1.09854114e-10, 'regressor__gamma': 0.1}, {'reduce_dim__n_components': 4, 'regressor__C': 0.001, 'regressor__gamma': 0.0009102982}, {'reduce_dim__n_components': 4, 'regressor__C': 0.001, 'regressor__gamma': 0.1}], 'split0_test_score': array([ -1.64406005e-02,  -4.72682510e+00,  -6.93844941e+00,
+        -9.13936218e+01]), 'split1_test_score': array([ -1.12476830e-02,  -6.98321901e+00,  -6.69593370e+00,
+        -1.11446126e+02]), 'split2_test_score': array([ -9.94914202e-03,  -1.36895907e+00,  -4.79622702e+00,
+        -6.25011958e+01]), 'split3_test_score': array([ -1.01203390e-02,  -1.65835804e+00,  -5.87236506e+00,
+        -7.61037576e+01]), 'split4_test_score': array([ -1.64940505e-02,  -1.41028574e+01,  -6.70256303e+00,
+        -1.15993946e+02]), 'mean_test_score': array([ -1.28503630e-02,  -5.76804372e+00,  -6.20110764e+00,
+        -9.14877295e+01]), 'std_test_score': array([  2.98680300e-03,   4.65341527e+00,   7.90157511e-01,
+         2.03754108e+01]), 'rank_test_score': array([1, 2, 3, 4], dtype=int32)}
