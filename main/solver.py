@@ -3,10 +3,14 @@
 import numpy as np
 from scipy.linalg import eigh
 
-def solver(nk, nbasis, mu, hamiton_mat):
+def solver(nk, nbasis, hamiton_mat, occ=1):
+    """
+    fix electron number equals 1
+    """
     kpoints = np.linspace(0, np.pi, nk)
     # build and solve eigenvalue problem
     T = 0
+    mu = 0
     # En = np.zeros((nk, nbasis))
     density = np.zeros(nbasis, dtype=np.complex64)
     for ki, k in enumerate(kpoints):
@@ -15,16 +19,20 @@ def solver(nk, nbasis, mu, hamiton_mat):
         En_k, Uq_k = eigh(hamiton_mat, overwrite_a=True, overwrite_b=True)
         # En[ki] = En_k
         # compute mu
-        if k == 0:
-            b = En_k[0]         # set the minimum of band energy to 0 !
+        if ki == 0:
+            bottom = En_k[0]         # set the minimum of band energy to 0 !
+        if ki == (nk-1):
+            top = En_k[0]
         # compute electron density
         # compute kinetic energy
         num_mat_eigspace = np.zeros((nbasis, nbasis))
-        for i in range(nbasis):
-            if En_k[i] <= mu + b:
-                num_mat_eigspace[i, i] = 1
-            else:
-                break
+        num_mat_eigspace[0, 0] = 1
+        # for i in range(nbasis):
+        #     if (i+1) <= occ*nk:
+        #         num_mat_eigspace[i, i] = 1
+        #     else:
+        #         mu = En_k[i-1] - b
+        #         break
         density_mat_kspace = Uq_k @ (num_mat_eigspace @ (Uq_k.T).conj())
 
         density_k = np.zeros(nbasis, dtype=np.complex64)
@@ -34,7 +42,8 @@ def solver(nk, nbasis, mu, hamiton_mat):
             T_k += 0.5*((k+(i-nbasis//2)*2*np.pi)**2)*(density_mat_kspace[i, i]).real
         T += T_k
         density += density_k
-    return T/nk, density/nk
+    mu = top - bottom
+    return T/nk, density/nk, mu
 
 
 
