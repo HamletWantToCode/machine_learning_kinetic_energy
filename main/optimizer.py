@@ -20,7 +20,7 @@ class Minimizer(object):
         project_gd = dEkt + Vt - mu
         return self.transformer.inverse_transform_gradient(project_gd[np.newaxis, :])[0]
 
-    def run(self, dens_init, V, mu, N, eta=1e-2, err=1e-4, maxiters=1000):
+    def run(self, dens_init, V, mu, N, eta=1e-2, err=1e-4, maxiters=1000, verbose=False):
         dens_init, V = check_array(dens_init), check_array(V)
 
         E0 = self.energy(dens_init, V, mu, N)
@@ -30,6 +30,8 @@ class Minimizer(object):
             dens = dens_init - eta*gd
             E1 = self.energy(dens, V, mu, N)
             dens_init = dens
+            if verbose and (n%10==0):
+                print('Previous E0=%.5f, After %d iteration, E1=%.5f, |E|=%.5f' %(E0, n, E1, abs(E1-E0)))
             if abs(E1 - E0)<err:
                 print('converge after %d of iterations !' %(n))
                 break

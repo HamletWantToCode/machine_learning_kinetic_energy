@@ -1,6 +1,6 @@
 # machine learning with cross validation
 
-import numpy as np 
+import numpy as np
 import pickle
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
@@ -27,7 +27,7 @@ param_grid = [
               {
               'reduce_dim__n_components': [4],
               'regressor__C': [1.09854114e-10, 1e-3],
-              'regressor__gamma': [0.0009102982, 0.1]  
+              'regressor__gamma': [0.0009102982, 0.1]
               }
              ]
 grid_search = MyGridSearchCV(pipe, param_grid, cv=5, scoring=neg_mean_squared_error_scorer)
@@ -42,7 +42,7 @@ best_estimator = grid_search.best_estimator_
 with open('../example_demo/demo_best_estimator', 'wb') as f2:
     pickle.dump(best_estimator, f2)
 with open('../example_demo/demo_train_data', 'wb') as f3:
-    train_data = np.c_[Ek_train.reshape((-1, 1)), densx_train, dEkx_train] 
+    train_data = np.c_[Ek_train.reshape((-1, 1)), densx_train, dEkx_train]
     pickle.dump(train_data, f3)
 with open('../example_demo/demo_test_data', 'wb') as f4:
     test_data = np.c_[Ek_test.reshape((-1, 1)), densx_test, dEkx_test]
