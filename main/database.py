@@ -6,10 +6,10 @@ import pickle
 from MLEK.main.utils import simple_potential_gen
 from MLEK.main.solver import solver
 
-NSAMPLES = 1000
-LOW_A = 100
-HIGH_A = 500
-LOW_B = 0.4
+NSAMPLES = 500
+LOW_V0 = 5
+HIGH_V0 = 8
+LOW_PHI0 = 
 HIGH_B = 0.6
 LOW_C = 0.03
 HIGH_C = 0.1
@@ -27,8 +27,8 @@ DATA_STORAGE = np.zeros((NSAMPLE_PER_PROC, NBASIS+1), dtype=np.complex64)
 RANDOM_STATE = ID
 param_gen = simple_potential_gen(NBASIS, LOW_A, HIGH_A, LOW_B, HIGH_B, LOW_C, HIGH_C, MU, RANDOM_STATE)
 for i in range(NSAMPLE_PER_PROC):
-    hamilton_mat, Vq, mu = next(param_gen)
-    T, density = solver(NK, NBASIS, mu, hamilton_mat)
+    hamilton_mat, Vq = next(param_gen)
+    T, density, mu = solver(NK, NBASIS, hamilton_mat)
     DATA_STORAGE[i] = np.array([T, *density], dtype=np.complex64)
     POTENTIAL_STORAGE[i] = np.array([mu, *Vq], dtype=np.complex64)
 

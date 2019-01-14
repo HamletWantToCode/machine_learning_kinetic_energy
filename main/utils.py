@@ -1,20 +1,20 @@
 import numpy as np
 
-# simulate Burke's potential with FFT
-def simple_potential_gen(nbasis, low_a, high_a, low_b, high_b, low_c, high_c, mu, random_state):
-    np.random.seed(random_state)
-    nq = (nbasis-1)*2
-    X = np.linspace(0, 1, nq)
+# simulate periodic potential
+def simple_potential_gen(nbasis, low_V0, high_V0, low_Phi0, high_Phi0, random_state):
+    R = np.random.RandomState(random_state)
     while True:
-        a = np.random.uniform(low_a, high_a, 3)
-        b = np.random.uniform(low_b, high_b, 3)
-        c = np.random.uniform(low_c, high_c, 3)
-        Vx = -np.sum(a[:, np.newaxis]*np.exp(-0.5*(X[np.newaxis, :]-b[:, np.newaxis])**2/c[:, np.newaxis]**2), axis=0)
-        Vq = np.fft.rfft(Vx)/nbasis
-        H = np.zeros((nbasis, nbasis), dtype=np.complex64)
-        for i in range(1, nbasis):
-                np.fill_diagonal(H[i:, :-i], Vq[i].conj())
-        yield (H, Vq, mu)
+        Vq = np.zeros(nbasis, dtype=np.complex64)
+        hamilton_mat = np.zeros((nbasis, nbasis), dtype=np.complex64)
+        
+        V0 = R.uniform(low_V0, high_V0, 3)
+        Phi0 = R.uniform(low_Phi0, high_Phi0, 2)
+
+        Vq[0] = -np.sum(V0)
+        Vq[1] = 0.5*V0[0] + 0.5*V0[1]*np.exp(2j*np.pi*Phi0[0]) + 0.5*V0[2]*np.exp(2j*np.pi*Phi0[1])
+        np.fill_diagonal(hamilton_mat[1:, :-1], Vq[1].conj())
+
+        yield(hamilton_mat, Vq)
 
 # potential generator
 def potential_gen(nbasis, max_q, low_V0, high_V0, low_mu, high_mu, random_state):
@@ -39,13 +39,13 @@ def potential_gen(nbasis, max_q, low_V0, high_V0, low_mu, high_mu, random_state)
             np.fill_diagonal(hamilton_mat[i:, :-i], Vq_conj)
         yield (hamilton_mat, Vq, mu)
 
-def irfft(Aq, n_out):
-    X = np.linspace(0, 1, n_out)
-    nq = len(Aq)
-    ifft_mat = np.zeros((n_out, nq), dtype=np.complex64)
-    for i in range(n_out):
-        for k in range(nq):
-            ifft_mat[i, k] = np.cos(2*np.pi*k*X[i])
-    ifft_mat[:, 1:] *= 2
-    Ax = ifft_mat @ Aq
-    return Ax.real
+# def irfft(Aq, n_out):
+#     X = np.linspace(0, 1, n_out)
+#     nq = len(Aq)
+#     ifft_mat = np.zeros((n_out, nq), dtype=np.complex64)
+#     for i in range(n_out):
+#         for k in range(nq):
+#             ifft_mat[i, k] = np.cos(2*np.pi*k*X[i])
+#     ifft_mat[:, 1:] *= 2
+#     Ax = ifft_mat @ Aq
+#     return Ax.real
