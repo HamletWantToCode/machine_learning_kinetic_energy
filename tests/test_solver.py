@@ -1,7 +1,9 @@
 # test solver
 
 import numpy as np
-import matplotlib.pyplot as plt 
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 from MLEK.main.solver import solver
 from MLEK.main.utils import simple_potential_gen
@@ -10,19 +12,28 @@ from MLEK.tools.plot_tools import plot_real_space_density
 nk = 100
 nbasis = 10
 low_V0, high_V0 = 5, 8
-low_Phi0, high_Phi0 = -0.15, 0.15
+low_Phi0, high_Phi0 = -0.1, 0.1
 params_gen = simple_potential_gen(nbasis, low_V0, high_V0, low_Phi0, high_Phi0, 38782)
 
 fig = plt.figure()
 ax = fig.gca()
 X = np.linspace(0, 1, 100)
-DENSX = np.zeros((20, 100))
-for i in range(20):
-    hamilton_mat, Vq = next(params_gen)
-    T, densq, mu = solver(nk, nbasis, hamilton_mat)
-    densx = np.fft.irfft(densq, 100)*100
-    DENSX[i] = densx
-plot_real_space_density(DENSX, out_dir='test_demo')
+hamilton_mat, Vq = next(params_gen)
+T, densq, mu, En = solver(nk, nbasis, hamilton_mat, debug=True)
+
+k_points = np.linspace(0, np.pi, 100)
+for i in range(4):
+    plt.plot(k_points, En.T[i], 'b')
+plt.savefig('../periodic/energy_band.png')
+
+
+# DENSX = np.zeros((20, 100))
+# for i in range(20):
+#     hamilton_mat, Vq = next(params_gen)
+#     T, densq, mu = solver(nk, nbasis, hamilton_mat)
+#     densx = np.fft.irfft(densq, 100)*100
+#     DENSX[i] = densx
+# plot_real_space_density(DENSX, out_dir='test_demo')
 
 
 

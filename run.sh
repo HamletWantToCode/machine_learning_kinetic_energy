@@ -1,9 +1,9 @@
 #!/bin/bash
 
-python=/home/hongbin/anaconda3/envs/project-qml/bin/python
-mpirun=/home/hongbin/anaconda3/envs/project-qml/bin/mpirun
+python=/home/hongbin/.conda/envs/workspace/bin/python
+mpirun=/home/hongbin/.conda/envs/workspace/bin/mpirun
 date > out
 
 cd main/
-(time nohup $mpirun -n 4 $python database.py &) >>../out 2>&1
+(time nohup $mpirun -n 10 $python database.py &) >>../out 2>&1
 

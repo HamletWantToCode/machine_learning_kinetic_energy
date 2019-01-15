@@ -6,6 +6,7 @@ run.sh
 **/.ipynb_checkpoints/
 **/out
 .AppleDouble/
+periodic/
 .vscode/
 **/old/
 **/c_extension/
