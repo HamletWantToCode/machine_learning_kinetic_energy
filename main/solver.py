@@ -3,7 +3,7 @@
 import numpy as np
 from scipy.linalg import eigh
 
-def solver(nk, nbasis, hamiton_mat, occ=1):
+def solver(nk, nbasis, hamiton_mat, occ=1, debug=False):
     """
     fix electron number equals 1
     """
@@ -11,13 +11,15 @@ def solver(nk, nbasis, hamiton_mat, occ=1):
     # build and solve eigenvalue problem
     T = 0
     mu = 0
-    # En = np.zeros((nk, nbasis))
+    if debug:
+        En = np.zeros((nk, nbasis))
     density = np.zeros(nbasis, dtype=np.complex64)
     for ki, k in enumerate(kpoints):
         kinetic_term = np.array([0.5*(k+(i-nbasis//2)*2*np.pi)**2 for i in range(nbasis)])
         np.fill_diagonal(hamiton_mat, kinetic_term)
         En_k, Uq_k = eigh(hamiton_mat, overwrite_a=True, overwrite_b=True)
-        # En[ki] = En_k
+        if debug:
+            En[ki] = En_k
         # compute mu
         if ki == 0:
             bottom = En_k[0]         # set the minimum of band energy to 0 !
@@ -43,7 +45,11 @@ def solver(nk, nbasis, hamiton_mat, occ=1):
         T += T_k
         density += density_k
     mu = top - bottom
-    return T/nk, density/nk, mu
+    if debug:
+        return T/nk, density/nk, mu, En
+    else:
+        return T/nk, density/nk, mu
+
 
 
 
