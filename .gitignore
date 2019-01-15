@@ -5,7 +5,7 @@ run.sh
 *$py.class
 **/.ipynb_checkpoints/
 **/out
-data_file/
+.AppleDouble/
 .vscode/
 **/old/
 **/c_extension/
