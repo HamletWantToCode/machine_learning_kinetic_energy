@@ -5,5 +5,5 @@ mpirun=/home/hongbin/.conda/envs/workspace/bin/mpirun
 date > out
 
 cd main/
-(time nohup $mpirun -n 10 $python database.py &) >>../out 2>&1
+(time nohup $mpirun --host 192.168.0.103 -n 10 $python database.py &) >>../out 2>&1
 
